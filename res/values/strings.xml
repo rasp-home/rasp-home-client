@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Rasp-Home</string>
+    <string name="activity_settings_label">Settings</string><string name="service_positioning_label">Positioning Service</string>
+    
+    <string name="pref_positioning_category_title">Positioning</string>
+    <string name="pref_positioning_tracking_title">Tracking</string>
+    <string name="pref_positioning_tracking_summary">Enable or disable position tracking</string>   
+    <string name="pref_positioning_calibrate_title">Calibrate</string>
+    <string name="pref_positioning_calibrate_summary">Calibrate the tracking positions</string>
+    <string name="pref_positioning_interval_title">Tracking interval</string><string name="pref_positioning_interval_summary">%d ms (min interval 4000 ms)</string><string name="dialog_positioning_locations_label">Select location</string>
+    <string-array name="dialog_positioning_locations_names">
+        <item >Kitchen</item>
+        <item >Bedroom</item>
+        <item >Livingroom</item>
+    </string-array><string name="dialog_positioning_record_on">Record started</string>
+    <string name="dialog_positioning_record_off">Record stopped</string>
+    <string name="dialog_positioning_save_label">Current saved positions</string>
+    <plurals name="dialog_positioning_save_count">
+        <item quantity="one">1 position</item>
+        <item quantity="other">%d positions</item>
+    </plurals><string name="dialog_positioning_erase_title">Delete all positions</string>
+    
+    
+    
+    <string name="notification_positioning_title">Current location</string>
+    <string name="notification_positioning_text">No location found</string><string name="error_no_wlan">Turn on wifi to start tracking</string>
+    
+    
+    
+
+</resources>

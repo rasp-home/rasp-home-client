@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:key="pref_positioning_category" android:title="@string/pref_positioning_category_title">
+        <SwitchPreference android:key="pref_positioning_tracking" android:title="@string/pref_positioning_tracking_title" android:defaultValue="false" android:summary="@string/pref_positioning_tracking_summary"/>
+        <EditTextPreference android:title="@string/pref_positioning_interval_title" android:defaultValue="6000" android:key="pref_positioning_interval" android:summary="@string/pref_positioning_interval_summary"/><de.unidue.wiwi.tdr.kn3.rasp_home.PositioningPreference
+            android:key="pref_positioning_calibrate"
+            android:title="@string/pref_positioning_calibrate_title"
+            android:summary="@string/pref_positioning_calibrate_summary"
+            android:dialogLayout="@layout/positioning_dialog"
+            android:positiveButtonText="@android:string/ok"
+            android:negativeButtonText="@android:string/cancel"/>
+        
+    </PreferenceCategory>
+</PreferenceScreen>
