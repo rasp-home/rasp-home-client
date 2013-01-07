@@ -3,7 +3,6 @@ package de.unidue.wiwi.tdr.kn3.rasp_home;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -29,8 +28,8 @@ public class SettingsActivity extends Activity {
 			addPreferencesFromResource(R.xml.preferences);
 
 			Preference pref = findPreference("pref_positioning_interval");
-			pref.setSummary(String.format(getString(R.string.pref_positioning_interval_summary),
-					Integer.parseInt(pref.getSharedPreferences().getString(pref.getKey(), "6000"))));
+			pref.setSummary(String.format(getString(R.string.pref_positioning_interval_summary), pref
+					.getSharedPreferences().getInt(pref.getKey(), NumberPickerPreference.DEFAULT_VALUE)));
 		}
 
 		@Override
@@ -57,12 +56,9 @@ public class SettingsActivity extends Activity {
 				Preference pref = findPreference(arg1);
 				try {
 					pref.setSummary(String.format(getString(R.string.pref_positioning_interval_summary),
-							Integer.parseInt(arg0.getString(pref.getKey(), "6000"))));
+							arg0.getInt(pref.getKey(), NumberPickerPreference.DEFAULT_VALUE)));
 				} catch (NumberFormatException e) {
 					e.printStackTrace();
-					Editor editor = arg0.edit();
-					editor.putString(arg1, "6000");
-					editor.commit();
 				}
 
 				if (MainApplication.pref.getBoolean("pref_positioning_tracking", false)) {

@@ -121,7 +121,6 @@ public class PositioningPreference extends DialogPreference implements Observer 
 					positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition())),
 					positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition()))));
 		}
-
 	}
 
 }

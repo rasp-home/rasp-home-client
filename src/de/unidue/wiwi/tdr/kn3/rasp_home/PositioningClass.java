@@ -91,7 +91,7 @@ public class PositioningClass implements Serializable {
 
 		for (Entry<String, Position> meanPosition : meanLocations.entrySet()) {
 			distance = meanPosition.getValue().getDistance(comparePosition);
-			if (distance < bestDistance) {
+			if (distance > 0 && distance < bestDistance) {
 				location = meanPosition.getKey();
 				bestDistance = distance;
 			}
@@ -142,12 +142,18 @@ public class PositioningClass implements Serializable {
 
 		public double getDistance(Position position) {
 			double distance = 0;
+			int count = 0;
 			for (Entry<String, Integer> station : stations.entrySet()) {
 				if (position.stations.get(station.getKey()) != null) {
 					distance += Math.pow(station.getValue() - position.stations.get(station.getKey()), 2);
+					count++;
 				}
 			}
-			return distance;
+			if (count >= 3) {
+				return Math.sqrt(distance);
+			} else {
+				return -1;
+			}
 		}
 
 		public void updatePosition(List<ScanResult> results) {

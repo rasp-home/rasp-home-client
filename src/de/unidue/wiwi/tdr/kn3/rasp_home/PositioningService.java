@@ -35,7 +35,7 @@ public class PositioningService extends IntentService implements Observer {
 		positions = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
 		wifi = new WiFiClass(this);
 		wifi.observer.addObserver(this);
-		wifi.StartScan(Integer.parseInt(MainApplication.pref.getString("pref_positioning_interval", "6000")));
+		wifi.StartScan(MainApplication.pref.getInt("pref_positioning_interval", WiFiClass.MIN_INTERVAL));
 
 		mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(getString(R.string.notification_positioning_title))
