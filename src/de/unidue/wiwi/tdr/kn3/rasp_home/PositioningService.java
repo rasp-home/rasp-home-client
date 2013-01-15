@@ -1,8 +1,6 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import android.app.IntentService;
 import android.app.NotificationManager;
@@ -14,18 +12,23 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
-public class PositioningService extends IntentService implements Observer {
+public class PositioningService extends IntentService implements Observer<List<ScanResult>> {
+
+	public Observable<String> observer;
 
 	private static final int NOTIFICATION_ID = 1;
 
+	private String lastLocation;
+
 	private NotificationCompat.Builder mBuilder;
-	NotificationManager mNotificationManager;
+	private NotificationManager mNotificationManager;
 
 	private WiFiClass wifi;
 	private PositioningClass positions;
 
 	public PositioningService() {
 		super("PositioningService");
+		observer = new Observable<String>();
 	}
 
 	@Override
@@ -72,15 +75,20 @@ public class PositioningService extends IntentService implements Observer {
 	}
 
 	@Override
-	public void update(Observable observable, Object data) {
-		if (data instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<ScanResult> results = (List<ScanResult>) data;
-			String location = positions.getBestLocation(new PositioningClass.Position(results));
-			Log.d(MainApplication.RH_TAG, "Best found location: " + location);
-			mBuilder.setContentText(location.equals("") ? getString(R.string.notification_positioning_text) : location);
-			mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-			// TODO Send result to server
-		}
+	public void update(Observable<List<ScanResult>> o, List<ScanResult> arg) {
+		lastLocation = positions.getBestLocation(new PositioningClass.Position(arg));
+		Log.d(MainApplication.RH_TAG, "Best found location: " + lastLocation);
+
+		mBuilder.setContentText(lastLocation.equals("") ? getString(R.string.notification_positioning_text)
+				: lastLocation);
+		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+
+		observer.notifyObservers(lastLocation);
+
+		// TODO Send result to server
+	}
+
+	public String GetLastLocation() {
+		return lastLocation;
 	}
 }

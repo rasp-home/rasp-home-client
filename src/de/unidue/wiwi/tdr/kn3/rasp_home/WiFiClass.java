@@ -1,7 +1,6 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
 import java.util.List;
-import java.util.Observable;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,10 +14,10 @@ import android.widget.Toast;
 public class WiFiClass extends BroadcastReceiver {
 
 	public static final int MIN_INTERVAL = 4000;
+	public Observable<List<ScanResult>> observer;
 
 	private WifiManager wifi;
 	private Context context;
-	public wifiObserver observer;
 
 	private boolean scan = false;
 	private int interval;
@@ -26,7 +25,7 @@ public class WiFiClass extends BroadcastReceiver {
 	public WiFiClass(Context context) {
 		this.context = context;
 		wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-		observer = new wifiObserver();
+		observer = new Observable<List<ScanResult>>();
 	}
 
 	public boolean StartScan(int interval) {
@@ -60,20 +59,13 @@ public class WiFiClass extends BroadcastReceiver {
 	public void onReceive(Context arg0, Intent arg1) {
 		if (scan) {
 			Log.d(MainApplication.RH_TAG, "New scan results");
-			observer.newScanResults(wifi.getScanResults());
+			observer.notifyObservers(wifi.getScanResults());
 			try {
-				Thread.sleep(interval - 4000);
+				Thread.sleep(interval - MIN_INTERVAL);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			wifi.startScan();
-		}
-	}
-
-	public static class wifiObserver extends Observable {
-		public void newScanResults(List<ScanResult> results) {
-			setChanged();
-			notifyObservers(results);
 		}
 	}
 }

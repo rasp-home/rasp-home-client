@@ -2,8 +2,6 @@ package de.unidue.wiwi.tdr.kn3.rasp_home;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import android.content.Context;
 import android.net.wifi.ScanResult;
@@ -21,7 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-public class PositioningPreference extends DialogPreference implements Observer {
+public class PositioningPreference extends DialogPreference implements Observer<List<ScanResult>> {
 
 	private WiFiClass wifi;
 	private PositioningClass positions;
@@ -40,7 +38,7 @@ public class PositioningPreference extends DialogPreference implements Observer 
 	@Override
 	protected void onBindDialogView(View view) {
 		super.onBindDialogView(view);
-		getContext().stopService(MainApplication.wifiService);
+		getContext().stopService(MainApplication.positioningService);
 
 		positions = PositioningClass.loadPositions(getContext(), getKey());
 		positions.updateLocations(getContext().getResources()
@@ -106,21 +104,16 @@ public class PositioningPreference extends DialogPreference implements Observer 
 		wifi.StopScan();
 
 		if (MainApplication.pref.getBoolean("pref_positioning_tracking", false)) {
-			getContext().startService(MainApplication.wifiService);
+			getContext().startService(MainApplication.positioningService);
 		}
 	}
 
 	@Override
-	public void update(Observable observable, Object data) {
-		if (data instanceof List) {
-			@SuppressWarnings("unchecked")
-			List<ScanResult> results = (List<ScanResult>) data;
-			positions.addPositionScanResults(locations_list.get(locations_spinner.getSelectedItemPosition()), results);
-			save_textview.setText(getContext().getResources().getQuantityString(
-					R.plurals.dialog_positioning_save_count,
-					positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition())),
-					positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition()))));
-		}
+	public void update(Observable<List<ScanResult>> o, List<ScanResult> arg) {
+		positions.addPositionScanResults(locations_list.get(locations_spinner.getSelectedItemPosition()), arg);
+		save_textview.setText(getContext().getResources().getQuantityString(R.plurals.dialog_positioning_save_count,
+				positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition())),
+				positions.getPositionsCount(locations_list.get(locations_spinner.getSelectedItemPosition()))));
 	}
 
 }

@@ -48,9 +48,9 @@ public class SettingsActivity extends Activity {
 		public void onSharedPreferenceChanged(SharedPreferences arg0, String arg1) {
 			if (arg1.equals("pref_positioning_tracking")) {
 				if (arg0.getBoolean(arg1, false)) {
-					getActivity().startService(MainApplication.wifiService);
+					getActivity().startService(MainApplication.positioningService);
 				} else {
-					getActivity().stopService(MainApplication.wifiService);
+					getActivity().stopService(MainApplication.positioningService);
 				}
 			} else if (arg1.equals("pref_positioning_interval")) {
 				Preference pref = findPreference(arg1);
@@ -62,8 +62,8 @@ public class SettingsActivity extends Activity {
 				}
 
 				if (MainApplication.pref.getBoolean("pref_positioning_tracking", false)) {
-					getActivity().stopService(MainApplication.wifiService);
-					getActivity().startService(MainApplication.wifiService);
+					getActivity().stopService(MainApplication.positioningService);
+					getActivity().startService(MainApplication.positioningService);
 				}
 			}
 		}
