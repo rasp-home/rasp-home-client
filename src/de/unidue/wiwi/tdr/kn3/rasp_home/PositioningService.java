@@ -28,27 +28,27 @@ public class PositioningService extends IntentService implements Observer<List<S
 
 	public PositioningService() {
 		super("PositioningService");
-		observer = new Observable<String>();
 	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		Log.d(MainApplication.RH_TAG, "Start PositioningService");
-		positions = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
+		observer = new Observable<String>();
 		wifi = new WiFiClass(this);
 		wifi.observer.addObserver(this);
 		wifi.StartScan(MainApplication.pref.getInt("pref_positioning_interval", WiFiClass.MIN_INTERVAL));
+		positions = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
+		
+		// TODO Create Communication
 
 		mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(getString(R.string.notification_positioning_title))
 				.setContentText(getString(R.string.notification_positioning_text));
-		Intent resultIntent = new Intent(this, SettingsActivity.class);
 		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 		stackBuilder.addParentStack(SettingsActivity.class);
-		stackBuilder.addNextIntent(resultIntent);
-		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-		mBuilder.setContentIntent(resultPendingIntent);
+		stackBuilder.addNextIntent(new Intent(this, SettingsActivity.class));
+		mBuilder.setContentIntent(stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 		startForeground(NOTIFICATION_ID, mBuilder.build());
@@ -78,14 +78,13 @@ public class PositioningService extends IntentService implements Observer<List<S
 	public void update(Observable<List<ScanResult>> o, List<ScanResult> arg) {
 		lastLocation = positions.getBestLocation(new PositioningClass.Position(arg));
 		Log.d(MainApplication.RH_TAG, "Best found location: " + lastLocation);
+		observer.notifyObservers(lastLocation);
+
+		// TODO Send result to server
 
 		mBuilder.setContentText(lastLocation.equals("") ? getString(R.string.notification_positioning_text)
 				: lastLocation);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-
-		observer.notifyObservers(lastLocation);
-
-		// TODO Send result to server
 	}
 
 	public String GetLastLocation() {

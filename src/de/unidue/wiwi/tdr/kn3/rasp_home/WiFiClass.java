@@ -19,7 +19,7 @@ public class WiFiClass extends BroadcastReceiver {
 	private WifiManager wifi;
 	private Context context;
 
-	private boolean scan = false;
+	private boolean scanRun = false;
 	private int interval;
 
 	public WiFiClass(Context context) {
@@ -29,16 +29,16 @@ public class WiFiClass extends BroadcastReceiver {
 	}
 
 	public boolean StartScan(int interval) {
-		if (!scan && interval >= MIN_INTERVAL) {
+		if (!scanRun && interval >= MIN_INTERVAL) {
 			this.interval = interval;
 
 			if (!wifi.isWifiEnabled()) {
 				Toast.makeText(context, context.getString(R.string.error_no_wlan), Toast.LENGTH_LONG).show();
 			}
 
-			scan = true;
 			context.registerReceiver(this, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 			wifi.startScan();
+			scanRun = true;
 			return true;
 		} else {
 			return false;
@@ -46,9 +46,9 @@ public class WiFiClass extends BroadcastReceiver {
 	}
 
 	public boolean StopScan() {
-		if (scan) {
+		if (scanRun) {
 			context.unregisterReceiver(this);
-			scan = false;
+			scanRun = false;
 			return true;
 		} else {
 			return false;
@@ -57,7 +57,7 @@ public class WiFiClass extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context arg0, Intent arg1) {
-		if (scan) {
+		if (scanRun) {
 			Log.d(MainApplication.RH_TAG, "New scan results");
 			observer.notifyObservers(wifi.getScanResults());
 			try {

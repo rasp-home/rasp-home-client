@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rasp-Home</string>
-    <string name="activity_settings_label">Settings</string><string name="service_positioning_label">Positioning Service</string>
+    <string name="activity_settings_label">Settings</string><string name="service_positioning_label">Positioning Service</string><string name="service_communication_label">Communication Service</string>
     <string name="pref_positioning_category_title">Positioning</string>
     <string name="pref_positioning_tracking_title">Tracking</string>
     <string name="pref_positioning_tracking_summary_on">Position tracking enabled</string>   
@@ -25,4 +25,5 @@
     <string name="notification_positioning_title">Current location</string>
     <string name="notification_positioning_text">No location found</string><string name="error_no_wlan">Turn on wifi to start tracking</string>
     <string name="error_wrong_number">Number not allowed</string>
+    
 </resources>
