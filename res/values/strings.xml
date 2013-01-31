@@ -25,5 +25,11 @@
     <string name="notification_positioning_title">Current location</string>
     <string name="notification_positioning_text">No location found</string><string name="error_no_wlan">Turn on wifi to start tracking</string>
     <string name="error_wrong_number">Number not allowed</string>
-    
+    <string name="pref_communication_category_title">Network</string>
+    <string name="pref_communication_user_title">Username</string>
+    <string name="pref_communication_pass_title">Password</string>
+    <string name="pref_communication_serverport_title">Serverport</string>
+    <string name="pref_communication_serverport_summary">%d</string>
+    <string name="pref_communication_zeroconfigport_title">Zeroconfigport</string>
+    <string name="pref_communication_zeroconfigport_summary">%d</string>
 </resources>

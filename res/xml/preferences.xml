@@ -20,4 +20,29 @@
             android:summary="@string/pref_positioning_calibrate_summary"
             android:dialogLayout="@layout/positioning_dialog"/>
     </PreferenceCategory>
+    <PreferenceCategory android:key="pref_communication_category" android:title="@string/pref_communication_category_title">
+        <EditTextPreference 
+            android:key="pref_communication_user" 
+            android:title="@string/pref_communication_user_title"
+            android:defaultValue=""/>
+        <EditTextPreference 
+            android:key="pref_communication_pass"  
+            android:title="@string/pref_communication_pass_title"
+            android:defaultValue=""/>
+        <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
+            android:key="pref_communication_serverport"
+            android:title="@string/pref_communication_serverport_title"
+            android:summary="@string/pref_communication_serverport_summary"
+            android:defaultValue="8888"
+            custom:minValue="1024"
+            custom:maxValue="65535"
+            android:dialogLayout="@layout/numberpicker_dialog"/>
+        <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
+            android:key="pref_communication_zeroconfigport"
+            android:title="@string/pref_communication_zeroconfigport_title"
+            android:summary="@string/pref_communication_zeroconfigport_summary"
+            android:defaultValue="1234"
+            custom:minValue="1024"
+            android:dialogLayout="@layout/numberpicker_dialog"/>
+    </PreferenceCategory>
 </PreferenceScreen>

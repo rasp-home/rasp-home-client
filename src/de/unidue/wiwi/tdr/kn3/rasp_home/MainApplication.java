@@ -12,6 +12,7 @@ public class MainApplication extends Application {
 	public static Intent positioningService;
 	public static Intent communicationService;
 	public static SharedPreferences pref;
+	public static DatabaseClass database;
 
 	@Override
 	public void onCreate() {
@@ -21,6 +22,7 @@ public class MainApplication extends Application {
 		communicationService = new Intent(this, CommunicationService.class);
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		pref = PreferenceManager.getDefaultSharedPreferences(this);
+		database = new DatabaseClass();
 
 		if (pref.getBoolean("pref_positioning_tracking", false)) {
 			startService(positioningService);
