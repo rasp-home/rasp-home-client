@@ -13,6 +13,8 @@ public class MainApplication extends Application {
 	public static Intent communicationService;
 	public static SharedPreferences pref;
 	public static DatabaseClass database;
+	public static CommunicationClass com;
+	public static PositioningClass pos;
 
 	@Override
 	public void onCreate() {
@@ -23,10 +25,14 @@ public class MainApplication extends Application {
 		PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 		pref = PreferenceManager.getDefaultSharedPreferences(this);
 		database = new DatabaseClass();
+		com = new CommunicationClass(this);
+		pos = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
 
 		if (pref.getBoolean("pref_positioning_tracking", false)) {
 			startService(positioningService);
 		}
+
+		pos.updateLocations(this.getResources().getStringArray(R.array.dialog_positioning_locations_names));
 
 		startService(communicationService);
 	}

@@ -49,18 +49,15 @@ import android.util.Log;
 import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.Message.Type;
 
 public class CommunicationClass extends Thread {
-	public Observable<Message> observer;
-
+	
 	public Client client;
 	public Server server;
-	public Zeroconfig zeroconfig;
-
+	public Zeroconf zeroconf;
+	
 	public CommunicationClass(Context context) {
-		observer = new Observable<Message>();
-
 		client = new Client(context);
-		server = new Server(context, observer);
-		zeroconfig = new Zeroconfig(context, observer);
+		server = new Server(context);
+		zeroconf = new Zeroconf(context);
 	}
 
 	private static String GetStringOfInputStream(InputStream stream) {
@@ -138,14 +135,14 @@ public class CommunicationClass extends Thread {
 
 		private boolean SendRequest(HttpUriRequest request) {
 			try {
-				request.addHeader("Content-Type", "text/txt");
+				request.addHeader("Content-Type", "text/plain");
 				UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, pass);
 				request.addHeader(BasicScheme.authenticate(creds, "UTF-8", false));
 				HttpResponse response = client.execute(request);
 				if (response.getStatusLine().getStatusCode() == 200) {
 					Header contentHeader = response.getFirstHeader("Content-Type");
 					if (contentHeader != null) {
-						if (contentHeader.getValue().equals("text/txt")) {
+						if (contentHeader.getValue().equals("text/plain")) {
 							String responseString = GetStringOfInputStream(response.getEntity().getContent());
 							Log.d(MainApplication.RH_TAG, "Response " + responseString);
 						}
@@ -172,7 +169,9 @@ public class CommunicationClass extends Thread {
 	}
 
 	public static class Server extends Thread {
-		private Observable<Message> observer;
+		public Observable<Message> observer;
+		
+		private Context context;
 		private HttpService service;
 		private HttpRequestHandlerRegistry registry;
 		private SSLServerSocketFactory serverSF;
@@ -181,8 +180,9 @@ public class CommunicationClass extends Thread {
 		private String user = null, pass = null;
 		private int port = 0;
 
-		public Server(Context context, Observable<Message> observer) {
-			this.observer = observer;
+		public Server(Context context) {
+			this.context = context;
+			observer = new Observable<Message>();
 			service = new HttpService(new BasicHttpProcessor(), new DefaultConnectionReuseStrategy(),
 					new DefaultHttpResponseFactory());
 			registry = new HttpRequestHandlerRegistry();
@@ -246,7 +246,7 @@ public class CommunicationClass extends Thread {
 				SSLContext serverCon = SSLContext.getInstance("TLS");
 				KeyManagerFactory serverKMF = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 				KeyStore serverKS = KeyStore.getInstance(KeyStore.getDefaultType());
-				serverKS.load(context.getAssets().open("server.keystore"), "rhclien".toCharArray());
+				serverKS.load(this.context.getAssets().open("server.keystore"), "rhclien".toCharArray());
 				serverKMF.init(serverKS, "rhclien".toCharArray());
 				serverCon.init(serverKMF.getKeyManagers(), null, null);
 				serverSF = serverCon.getServerSocketFactory();
@@ -330,16 +330,17 @@ public class CommunicationClass extends Thread {
 		}
 	}
 
-	public static class Zeroconfig extends Thread {
+	public static class Zeroconf extends Thread {
+		public Observable<Message> observer;
+		
 		private Context context;
-		private Observable<Message> observer;
 		private DatagramSocket socket;
-		private boolean zeroconfigRun = false;
+		private boolean zeroconfRun = false;
 		private int port = 0;
 
-		public Zeroconfig(Context context, Observable<Message> observer) {
+		public Zeroconf(Context context) {
 			this.context = context;
-			this.observer = observer;
+			observer = new Observable<Message>();
 		}
 
 		InetAddress getBroadcastAddress() throws IOException {
@@ -354,11 +355,11 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Start(int port) {
-			if (!zeroconfigRun) {
+			if (!zeroconfRun) {
 				try {
 					this.port = port;
 					socket = new DatagramSocket(this.port);
-					zeroconfigRun = true;
+					zeroconfRun = true;
 					super.start();
 					return true;
 				} catch (Exception e) {
@@ -371,10 +372,10 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Stop() {
-			if (zeroconfigRun) {
+			if (zeroconfRun) {
 				try {
 					socket.close();
-					zeroconfigRun = false;
+					zeroconfRun = false;
 					return true;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -397,12 +398,12 @@ public class CommunicationClass extends Thread {
 				socket.send(packet);
 				socket.receive(packet);
 
-				while (zeroconfigRun) {
-					byte[] buf = new byte[5];
+				while (zeroconfRun) {
+					byte[] buf = new byte[13];
 					packet = new DatagramPacket(buf, buf.length);
 					socket.receive(packet);
 
-					if ((new String(packet.getData(), "UTF-8")).equals("hello")) {
+					if ((new String(packet.getData(), "UTF-8")).equals("hello backend")) {
 						observer.notifyObservers(new Message(Type.zeroconfig, null, packet.getAddress().toString()));
 
 						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":"

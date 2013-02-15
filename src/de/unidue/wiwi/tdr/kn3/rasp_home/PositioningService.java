@@ -1,20 +1,16 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
-import java.util.List;
-
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.ScanResult;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
+import android.widget.Toast;
 
-public class PositioningService extends IntentService implements Observer<List<ScanResult>> {
-
-	public Observable<String> observer;
+public class PositioningService extends IntentService implements Observer<String> {
 
 	private static final int NOTIFICATION_ID = 1;
 
@@ -22,9 +18,6 @@ public class PositioningService extends IntentService implements Observer<List<S
 
 	private NotificationCompat.Builder mBuilder;
 	private NotificationManager mNotificationManager;
-
-	private WiFiClass wifi;
-	private PositioningClass positions;
 
 	public PositioningService() {
 		super("PositioningService");
@@ -34,13 +27,9 @@ public class PositioningService extends IntentService implements Observer<List<S
 	public void onCreate() {
 		super.onCreate();
 		Log.d(MainApplication.RH_TAG, "Start PositioningService");
-		observer = new Observable<String>();
-		wifi = new WiFiClass(this);
-		wifi.observer.addObserver(this);
-		wifi.StartScan(MainApplication.pref.getInt("pref_positioning_interval", WiFiClass.MIN_INTERVAL));
-		positions = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
-		
-		// TODO Create Communication
+		MainApplication.pos.observer.addObserver(this);
+		MainApplication.pos.StartScan(MainApplication.pref.getInt("pref_positioning_interval",
+				PositioningClass.MIN_INTERVAL));
 
 		mBuilder = new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_launcher)
 				.setContentTitle(getString(R.string.notification_positioning_title))
@@ -69,22 +58,23 @@ public class PositioningService extends IntentService implements Observer<List<S
 	public void onDestroy() {
 		super.onDestroy();
 		Log.d(MainApplication.RH_TAG, "Stop PositioningService");
-		wifi.observer.deleteObserver(this);
-		wifi.StopScan();
+		MainApplication.pos.observer.deleteObserver(this);
+		MainApplication.pos.StopScan();
 		stopForeground(true);
 	}
 
 	@Override
-	public void update(Observable<List<ScanResult>> o, List<ScanResult> arg) {
-		lastLocation = positions.getBestLocation(new PositioningClass.Position(arg));
-		Log.d(MainApplication.RH_TAG, "Best found location: " + lastLocation);
-		observer.notifyObservers(lastLocation);
-
-		// TODO Send result to server
-
-		mBuilder.setContentText(lastLocation.equals("") ? getString(R.string.notification_positioning_text)
+	public void update(Observable<String> o, String arg) {
+		mBuilder.setContentText(lastLocation == null ? getString(R.string.notification_positioning_text)
 				: lastLocation);
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
+
+		if (arg != null) {
+			Log.d(MainApplication.RH_TAG, "Best found location: " + arg);
+		} else {
+			Toast.makeText(this, getString(R.string.error_no_position), Toast.LENGTH_SHORT).show();
+		}
+		// TODO Send result to server etc
 	}
 
 	public String GetLastLocation() {

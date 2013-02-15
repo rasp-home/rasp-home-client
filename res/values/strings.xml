@@ -23,7 +23,9 @@
         <item quantity="other">%d positions</item>
     </plurals><string name="dialog_positioning_erase_title">Delete all positions</string>    
     <string name="notification_positioning_title">Current location</string>
-    <string name="notification_positioning_text">No location found</string><string name="error_no_wlan">Turn on wifi to start tracking</string>
+    <string name="notification_positioning_text">No location found</string>
+    <string name="error_no_wifi">Turn on wifi to start tracking</string>
+    <string name="error_no_position">Could not detekt the current position</string>
     <string name="error_wrong_number">Number not allowed</string>
     <string name="pref_communication_category_title">Network</string>
     <string name="pref_communication_user_title">Username</string>
