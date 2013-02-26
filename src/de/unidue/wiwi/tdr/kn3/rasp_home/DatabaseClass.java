@@ -45,103 +45,179 @@ public class DatabaseClass {
 		public String room = null;
 		public String title = null;
 		public String type = null;
-		public Integer value = null;
+		public String input = null;
+		public String output = null;
 
-		public String Export(boolean name, boolean room, boolean title, boolean type, boolean value) {
+		public static String ExportOne(Node element, List<String> attribs) {
 			String export = "<node>";
-			if (name) {
-				export += "<name>" + (this.name == null ? "" : this.name) + "</name>";
+			if (attribs.contains("name")) {
+				export += "<name>" + element.name + "</name>";
 			}
-			if (room) {
-				export += "<room>" + (this.room == null ? "" : this.room) + "</room>";
+			if (attribs.contains("room")) {
+				export += "<room>" + element.room + "</room>";
 			}
-			if (title) {
-				export += "<title>" + (this.title == null ? "" : this.title) + "</title>";
+			if (attribs.contains("title")) {
+				export += "<title>" + element.title + "</title>";
 			}
-			if (type) {
-				export += "<type>" + (this.type == null ? "" : this.type) + "</type>";
+			if (attribs.contains("type")) {
+				export += "<type>" + element.type + "</type>";
 			}
-			if (value) {
-				export += "<value>" + (this.value == null ? "" : this.value) + "</value>";
+			if (attribs.contains("input")) {
+				export += "<input>" + element.input + "</input>";
+			}
+			if (attribs.contains("output")) {
+				export += "<output>" + element.output + "</output>";
 			}
 			export += "</node>";
 			return export;
 		}
 		
-		public static boolean UpdateList(List<Node> list, Node element) {
-			for (Node node : list) {
-				if (node.name.equals(element.name)) {
-					if (element.room != null) {
-						node.room = element.room;
-					}
-					if (element.title != null) {
-						node.title = element.title;
-					}
-					if (element.type != null) {
-						node.type = element.type;
-					}
-					if (element.value != null) {
-						node.value = element.value;
-					}
-					return true;
-				}
+		public static String ExportAll(List<Node> elements, List<String> attribs) {
+			String export = "<nodes>";
+			for (Node element : elements) {
+				export += ExportOne(element, attribs);
 			}
-			list.add(element);
-			return true;
+			export += "</nodes>";
+			return export;
 		}
 
-		public static Node Get(String input) {
+		public static Node GetOne(List<Node> elements, String name) {
+			for (Node element : elements) {
+				if (element.name.equals(name)) {
+					return element;
+				}
+			}
+			return null;
+		}
+		
+		public static List<Node> GetAll(List<Node> elements, String room) {
+			if (room == null) {
+				return elements;
+			} else {
+				List<Node> roomElements = new ArrayList<Node>();
+				for (Node element : elements) {
+					if (element.room.equals(room)) {
+						roomElements.add(element);
+					}
+				}
+				return roomElements;
+			}
+		}
+
+		public static Node AddOne(List<Node> elements, Node new_element) {
+			Node element = GetOne(elements, new_element.name);
+			if (element == null) {
+				elements.add(new_element);
+				return new_element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void AddAll(List<Node> elements, List<Node> new_elements) {
+			elements.addAll(new_elements);
+		}
+
+		public static Node DelOne(List<Node> elements, Node element) {
+			element = GetOne(elements, element.name);
+			if (element != null) {
+				elements.remove(element);
+				return element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void DelAll(List<Node> elements) {
+			elements.clear();
+		}
+
+		public static Node EditOne(Node element, String attrib, String value) {
+			if (attrib.equals("name")) {
+				element.name = value;
+			} else if (attrib.equals("room")) {
+				element.room = value;
+			} else if (attrib.equals("title")) {
+				element.title = value;
+			} else if (attrib.equals("type")) {
+				element.type = value;
+			} else if (attrib.equals("input")) {
+				element.input = value;
+			} else if (attrib.equals("output")) {
+				element.output = value;
+			} else {
+				return null;
+			}
+			return element;
+		}
+
+		public static Node ImportOne(String input, Node element, String name) {
+			if (element == null) {
+				element = new Node();
+			}
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
-				return Get(parser);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		private static Node Get(XmlPullParser parser) {
-			Node node = new Node();
-			try {
 				parser.require(XmlPullParser.START_TAG, null, "node");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
 					if (parser.getName().equals("name")) {
-						node.name = GetText(parser, "name");
+						if (name == null) {
+							name = GetText(parser, "name");
+						}
+						if (name != null) {
+							EditOne(element, "name", name);
+						}
 					} else if (parser.getName().equals("room")) {
-						node.room = GetText(parser, "room");
+						String room = GetText(parser, "room");
+						if (room != null) {
+							EditOne(element, "room", room);
+						}
 					} else if (parser.getName().equals("title")) {
-						node.title = GetText(parser, "title");
+						String title = GetText(parser, "title");
+						if (title != null) {
+							EditOne(element, "title", title);
+						}
 					} else if (parser.getName().equals("type")) {
-						node.type = GetText(parser, "type");
-					} else if (parser.getName().equals("value")) {
-						node.value = Integer.parseInt(GetText(parser, "value"));
+						String type = GetText(parser, "type");
+						if (type != null) {
+							EditOne(element, "type", type);
+						}
+					} else if (parser.getName().equals("input")) {
+						input = GetText(parser, "input");
+						if (input != null) {
+							EditOne(element, "input", input);
+						}
+					} else if (parser.getName().equals("output")) {
+						String output = GetText(parser, "output");
+						if (output != null) {
+							EditOne(element, "output", output);
+						}
 					}
 				}
 				parser.require(XmlPullParser.END_TAG, null, "node");
-				return node;
+				return element;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 
-		public static List<Node> GetList(String input) {
-			List<Node> nodes = new ArrayList<Node>();
-			Node node = new Node();
+		public static List<Node> ImportAll(String input) {
+			List<Node> elements = new ArrayList<Node>();
+			Node element;
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
 				parser.nextTag();
 				parser.require(XmlPullParser.START_TAG, null, "nodes");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
-					node = Get(parser);
-					if (node != null) {
-						nodes.add(node);
+					element = ImportOne(parser.getText(), null, null);
+					if (element != null) {
+						elements.add(element);
 					}
 				}
 				parser.require(XmlPullParser.END_TAG, null, "nodes");
-				return nodes;
+				return elements;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -152,68 +228,116 @@ public class DatabaseClass {
 	public static class Room {
 		public String name = null;
 
-		public String Export(boolean name) {
+		public static String ExportOne(Room element, List<String> attribs) {
 			String export = "<room>";
-			if (name) {
-				export += "<name>" + (this.name == null ? "" : this.name) + "</name>";
+			if (attribs.contains("name")) {
+				export += "<name>" + element.name + "</name>";
 			}
 			export += "</room>";
 			return export;
 		}
 		
-		public static boolean UpdateList(List<Room> list, Room element) {
-			for (Room user : list) {
-				if (user.name.equals(element.name)) {
-					return true;
-				}
+		public static String ExportAll(List<Room> elements, List<String> attribs) {
+			String export = "<rooms>";
+			for (Room element : elements) {
+				export += ExportOne(element, attribs);
 			}
-			list.add(element);
-			return true;
+			export += "</rooms>";
+			return export;
 		}
 
-		public static Room Get(String input) {
+		public static Room GetOne(List<Room> elements, String name) {
+			for (Room element : elements) {
+				if (element.name.equals(name)) {
+					return element;
+				}
+			}
+			return null;
+		}
+		
+		public static List<Room> GetAll(List<Room> elements) {
+			return elements;
+		}
+
+		public static Room AddOne(List<Room> elements, Room new_element) {
+			Room element = GetOne(elements, new_element.name);
+			if (element == null) {
+				elements.add(new_element);
+				return new_element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void AddAll(List<Room> elements, List<Room> new_elements) {
+			elements.addAll(new_elements);
+		}
+
+		public static Room DelOne(List<Room> elements, Room element) {
+			element = GetOne(elements, element.name);
+			if (element != null) {
+				elements.remove(element);
+				return element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void DelAll(List<Room> elements) {
+			elements.clear();
+		}
+
+		public static Room EditOne(Room element, String attrib, String value) {
+			if (attrib.equals("name")) {
+				element.name = value;
+			} else {
+				return null;
+			}
+			return element;
+		}
+
+		public static Room ImportOne(String input, Room element, String name) {
+			if (element == null) {
+				element = new Room();
+			}
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
-				return Get(parser);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		private static Room Get(XmlPullParser parser) {
-			Room room = new Room();
-			try {
 				parser.require(XmlPullParser.START_TAG, null, "room");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
 					if (parser.getName().equals("name")) {
-						room.name = GetText(parser, "name");
+						if (name == null) {
+							name = GetText(parser, "name");
+						}
+						if (name != null) {
+							EditOne(element, "name", name);
+						}
 					}
 				}
 				parser.require(XmlPullParser.END_TAG, null, "room");
-				return room;
+				return element;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 
-		public static List<Room> GetList(String input) {
-			List<Room> rooms = new ArrayList<Room>();
+		public static List<Room> ImportAll(String input) {
+			List<Room> elements = new ArrayList<Room>();
+			Room element;
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
 				parser.nextTag();
 				parser.require(XmlPullParser.START_TAG, null, "rooms");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
-					Room room = Get(parser);
-					if (room != null) {
-						rooms.add(room);
+					element = ImportOne(parser.getText(), null, null);
+					if (element != null) {
+						elements.add(element);
 					}
 				}
 				parser.require(XmlPullParser.END_TAG, null, "rooms");
-				return rooms;
+				return elements;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -225,98 +349,207 @@ public class DatabaseClass {
 		public String name = null;
 		public Boolean login = null;
 		public String room = null;
+		public String receive_room = null;
 		public Boolean admin = null;
 
-		public String Export(boolean name, boolean login, boolean room, boolean admin) {
+		public static String ExportOne(User element, List<String> attribs) {
 			String export = "<user>";
-			if (name) {
-				export += "<name>" + (this.name == null ? "" : this.name) + "</name>";
+			if (attribs.contains("name")) {
+				export += "<name>" + element.name + "</name>";
 			}
-			if (login) {
-				export += "<login>" + (this.login == null ? "" : this.login) + "</login>";
+			if (attribs.contains("login")) {
+				String login = null;
+				if (element.login != null) {
+					if (element.login == true) {
+						login = "True;";
+					} else {
+						login = "False";
+					}
+				}
+				export += "<login>" + login + "</login>";
 			}
-			if (room) {
-				export += "<room>" + (this.room == null ? "" : this.room) + "</room>";
+			if (attribs.contains("room")) {
+				export += "<room>" + element.room + "</room>";
 			}
-			if (admin) {
-				export += "<admin>" + (this.admin == null ? "" : this.admin) + "</admin>";
+			if (attribs.contains("receive_room")) {
+				export += "<receive_room>" + element.receive_room + "</receive_room>";
+			}
+			if (attribs.contains("admin")) {
+				String admin = null;
+				if (element.admin != null) {
+					if (element.admin == true) {
+						admin = "True;";
+					} else {
+						admin = "False";
+					}
+				}
+				export += "<admin>" + admin + "</admin>";
 			}
 			export += "</user>";
 			return export;
 		}
 		
-		public static boolean UpdateList(List<User> list, User element) {
-			for (User user : list) {
-				if (user.name.equals(element.name)) {
-					if (element.login != null) {
-						user.login = element.login;
-					}
-					if (element.room != null) {
-						user.room = element.room;
-					}
-					if (element.admin != null) {
-						user.admin = element.admin;
-					}
-					return true;
-				}
+		public static String ExportAll(List<User> elements, List<String> attribs) {
+			String export = "<users>";
+			for (User element : elements) {
+				export += ExportOne(element, attribs);
 			}
-			list.add(element);
-			return true;
+			export += "</users>";
+			return export;
 		}
 
-		public static User Get(String input) {
+		public static User GetOne(List<User> elements, String name) {
+			for (User element : elements) {
+				if (element.name.equals(name)) {
+					return element;
+				}
+			}
+			return null;
+		}
+		
+		public static List<User> GetAll(List<User> elements, String room) {
+			if (room == null) {
+				return elements;
+			} else {
+				List<User> roomElements = new ArrayList<User>();
+				for (User element : elements) {
+					if (element.room.equals(room)) {
+						roomElements.add(element);
+					}
+				}
+				return roomElements;
+			}
+		}
+
+		public static User AddOne(List<User> elements, User new_element) {
+			User element = GetOne(elements, new_element.name);
+			if (element == null) {
+				elements.add(new_element);
+				return new_element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void AddAll(List<User> elements, List<User> new_elements) {
+			elements.addAll(new_elements);
+		}
+
+		public static User DelOne(List<User> elements, User element) {
+			element = GetOne(elements, element.name);
+			if (element != null) {
+				elements.remove(element);
+				return element;
+			} else {
+				return null;
+			}
+		}
+		
+		public static void DelAll(List<User> elements) {
+			elements.clear();
+		}
+
+		public static User EditOne(User element, String attrib, String value) {
+			if (attrib.equals("name")) {
+				element.name = value;
+			} else if (attrib.equals("login")) {
+				if (value.equals("True")) {
+					element.login = true;
+				} else {
+					element.login = false;
+				}
+			} else if (attrib.equals("room")) {
+				element.room = value;
+			} else if (attrib.equals("receive_room")) {
+				element.receive_room = value;
+			} else if (attrib.equals("admin")) {
+				if (value.equals("True")) {
+					element.admin = true;
+				} else {
+					element.admin = false;
+				}
+			} else {
+				return null;
+			}
+			return element;
+		}
+
+		public static User ImportOne(String input, User element, String name) {
+			if (element == null) {
+				element = new User();
+			}
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
-				return Get(parser);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-
-		private static User Get(XmlPullParser parser) {
-			User user = new User();
-			try {
 				parser.require(XmlPullParser.START_TAG, null, "user");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
 					if (parser.getName().equals("name")) {
-						user.name = GetText(parser, "name");
+						if (name == null) {
+							name = GetText(parser, "name");
+						}
+						if (name != null) {
+							EditOne(element, "name", name);
+						}
+					} else if (parser.getName().equals("room")) {
+						String room = GetText(parser, "room");
+						if (room != null) {
+							EditOne(element, "room", room);
+						}
+					} else if (parser.getName().equals("title")) {
+						String title = GetText(parser, "title");
+						if (title != null) {
+							EditOne(element, "title", title);
+						}
+					} else if (parser.getName().equals("type")) {
+						String type = GetText(parser, "type");
+						if (type != null) {
+							EditOne(element, "type", type);
+						}
+					} else if (parser.getName().equals("input")) {
+						input = GetText(parser, "input");
+						if (input != null) {
+							EditOne(element, "input", input);
+						}
+					} else if (parser.getName().equals("output")) {
+						String output = GetText(parser, "output");
+						if (output != null) {
+							EditOne(element, "output", output);
+						}
 					}
 				}
 				parser.require(XmlPullParser.END_TAG, null, "user");
-				return user;
+				return element;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 
-		public static List<User> GetList(String input) {
-			List<User> users = new ArrayList<User>();
+		public static List<User> ImportAll(String input) {
+			List<User> elements = new ArrayList<User>();
+			User element;
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
 				parser.nextTag();
-				parser.require(XmlPullParser.START_TAG, null, "rooms");
+				parser.require(XmlPullParser.START_TAG, null, "users");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
-					User user = Get(parser);
-					if (user != null) {
-						users.add(user);
+					element = ImportOne(parser.getText(), null, null);
+					if (element != null) {
+						elements.add(element);
 					}
 				}
-				parser.require(XmlPullParser.END_TAG, null, "rooms");
-				return users;
+				parser.require(XmlPullParser.END_TAG, null, "users");
+				return elements;
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
 			}
 		}
 	}
-	
+
 	public static class Backend {
-		public String ip = null;
-		public String name = null;
-		public String pass = null;
+		public String ip_port = null;
+		public String name_pass = null;
 	}
 }

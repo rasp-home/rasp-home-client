@@ -49,11 +49,11 @@ import android.util.Log;
 import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.Message.Type;
 
 public class CommunicationClass extends Thread {
-	
+
 	public Client client;
 	public Server server;
 	public Zeroconf zeroconf;
-	
+
 	public CommunicationClass(Context context) {
 		client = new Client(context);
 		server = new Server(context);
@@ -78,7 +78,7 @@ public class CommunicationClass extends Thread {
 
 	public static class Message {
 		public static enum Type {
-			zeroconfig, updatenodevalue, updatenoderoomandtitle, addroom, deleteroom, loginnode, logoffnode
+			zeroconfig, updatenodevalue, updatenoderoomandtitle, addroom, deleteroom, addnode, deletenode
 		}
 
 		public Type type;
@@ -95,8 +95,7 @@ public class CommunicationClass extends Thread {
 	public static class Client {
 		private DefaultHttpClient client;
 		private String user = null, pass = null;
-		private String ip = null;
-		private int port = 0;
+		private String ip_port = null;
 
 		public Client(Context context) {
 			try {
@@ -113,18 +112,18 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean SendRequestGet(String uri) {
-			HttpGet request = new HttpGet("https://" + ip + ":" + port + uri);
+			HttpGet request = new HttpGet("https://" + ip_port + uri);
 			return SendRequest(request);
 		}
 
 		public boolean SendRequestDelete(String uri) {
-			HttpDelete request = new HttpDelete("https://" + ip + ":" + port + uri);
+			HttpDelete request = new HttpDelete("https://" + ip_port + uri);
 			return SendRequest(request);
 		}
 
 		public boolean SendRequestPost(String uri, String content) {
 			try {
-				HttpPost request = new HttpPost("https://" + ip + ":" + port + uri);
+				HttpPost request = new HttpPost("https://" + ip_port + uri);
 				request.setEntity(new StringEntity(content, "UTF-8"));
 				return SendRequest(request);
 			} catch (Exception e) {
@@ -162,22 +161,21 @@ public class CommunicationClass extends Thread {
 			this.pass = pass;
 		}
 
-		public void setServerIpPort(String ip, int port) {
-			this.ip = ip;
-			this.port = port;
+		public void setServerIpPort(String ip_port) {
+			this.ip_port = ip_port;
 		}
 	}
 
 	public static class Server extends Thread {
 		public Observable<Message> observer;
-		
+
 		private Context context;
 		private HttpService service;
 		private HttpRequestHandlerRegistry registry;
 		private SSLServerSocketFactory serverSF;
 		private SSLServerSocket serverSocket;
-		private boolean serverRun = false;
-		private String user = null, pass = null;
+		private boolean run = false;
+		private String user_pass = null;
 		private int port = 0;
 
 		public Server(Context context) {
@@ -192,12 +190,11 @@ public class CommunicationClass extends Thread {
 						throws HttpException, IOException {
 					if (AuthorizeUser(request, response)) {
 						String[] requestArray = request.getRequestLine().getUri().split("/");
-						if (request.getRequestLine().getMethod().equals("POST")) {
+						if (request.getRequestLine().getMethod().equals("PUT")) {
 							if (requestArray.length == 2) {
-								Server.this.observer.notifyObservers(new Message(Type.loginnode, request
-										.getRequestLine().getUri(),
-										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-												.getContent())));
+								Server.this.observer.notifyObservers(new Message(Type.addnode, request.getRequestLine()
+										.getUri(), GetStringOfInputStream(((HttpEntityEnclosingRequest) request)
+										.getEntity().getContent())));
 							} else if (requestArray.length == 3) {
 								Server.this.observer.notifyObservers(new Message(Type.updatenoderoomandtitle, request
 										.getRequestLine().getUri(),
@@ -210,9 +207,12 @@ public class CommunicationClass extends Thread {
 												.getContent())));
 							}
 						} else if (request.getRequestLine().getMethod().equals("DELETE")) {
-							Server.this.observer.notifyObservers(new Message(Type.logoffnode, request.getRequestLine()
-									.getUri(), GetStringOfInputStream(((HttpEntityEnclosingRequest) request)
-									.getEntity().getContent())));
+							if (requestArray.length == 3) {
+								Server.this.observer.notifyObservers(new Message(Type.deletenode, request
+										.getRequestLine().getUri(),
+										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
+												.getContent())));
+							}
 						}
 					}
 				}
@@ -255,6 +255,10 @@ public class CommunicationClass extends Thread {
 			}
 		}
 
+		public boolean isRun() {
+			return run;
+		}
+
 		private boolean AuthorizeUser(HttpRequest request, HttpResponse response) {
 			Header authHeader = request.getFirstHeader("Authorization");
 			if (authHeader != null) {
@@ -262,7 +266,7 @@ public class CommunicationClass extends Thread {
 					String auth;
 					try {
 						auth = new String(Base64.decode(authHeader.getValue().substring(6), Base64.DEFAULT), "UTF-8");
-						if (auth.equals(user + ":" + pass)) {
+						if (auth.equals(user_pass)) {
 							return true;
 						}
 					} catch (UnsupportedEncodingException e) {
@@ -276,12 +280,12 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Start(int port) {
-			if (!serverRun) {
+			if (!run) {
 				try {
 					this.port = port;
 					serverSocket = (SSLServerSocket) serverSF.createServerSocket(this.port);
 					serverSocket.setReuseAddress(true);
-					serverRun = true;
+					run = true;
 					super.start();
 					return true;
 				} catch (Exception e) {
@@ -294,10 +298,10 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Stop() {
-			if (serverRun) {
+			if (run) {
 				try {
 					serverSocket.close();
-					serverRun = false;
+					run = false;
 					return true;
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -311,7 +315,7 @@ public class CommunicationClass extends Thread {
 		@Override
 		public void run() {
 			super.run();
-			while (serverRun) {
+			while (run) {
 				try {
 					Socket socket = serverSocket.accept();
 					DefaultHttpServerConnection conn = new DefaultHttpServerConnection();
@@ -324,18 +328,17 @@ public class CommunicationClass extends Thread {
 			}
 		}
 
-		public void setAuthorizedUserPass(String user, String pass) {
-			this.user = user;
-			this.pass = pass;
+		public void setAuthorizedUserPass(String user_pass) {
+			this.user_pass = user_pass;
 		}
 	}
 
 	public static class Zeroconf extends Thread {
 		public Observable<Message> observer;
-		
+
 		private Context context;
 		private DatagramSocket socket;
-		private boolean zeroconfRun = false;
+		private boolean run = false;
 		private int port = 0;
 
 		public Zeroconf(Context context) {
@@ -343,7 +346,11 @@ public class CommunicationClass extends Thread {
 			observer = new Observable<Message>();
 		}
 
-		InetAddress getBroadcastAddress() throws IOException {
+		public boolean isRun() {
+			return run;
+		}
+
+		private InetAddress getBroadcastAddress() throws IOException {
 			WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 			DhcpInfo dhcp = wifi.getDhcpInfo();
 
@@ -355,11 +362,11 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Start(int port) {
-			if (!zeroconfRun) {
+			if (!run) {
 				try {
 					this.port = port;
 					socket = new DatagramSocket(this.port);
-					zeroconfRun = true;
+					run = true;
 					super.start();
 					return true;
 				} catch (Exception e) {
@@ -372,10 +379,10 @@ public class CommunicationClass extends Thread {
 		}
 
 		public boolean Stop() {
-			if (zeroconfRun) {
+			if (run) {
 				try {
 					socket.close();
-					zeroconfRun = false;
+					run = false;
 					return true;
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -398,13 +405,14 @@ public class CommunicationClass extends Thread {
 				socket.send(packet);
 				socket.receive(packet);
 
-				while (zeroconfRun) {
+				while (run) {
 					byte[] buf = new byte[13];
 					packet = new DatagramPacket(buf, buf.length);
 					socket.receive(packet);
 
 					if ((new String(packet.getData(), "UTF-8")).equals("hello backend")) {
-						observer.notifyObservers(new Message(Type.zeroconfig, null, packet.getAddress().toString()));
+						observer.notifyObservers(new Message(Type.zeroconfig, null, packet.getAddress().toString()
+								+ ":" + packet.getPort()));
 
 						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":"
 								+ packet.getPort());

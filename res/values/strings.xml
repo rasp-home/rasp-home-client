@@ -11,11 +11,7 @@
     <string name="pref_positioning_calibrate_title">Calibrate</string>
     <string name="pref_positioning_calibrate_summary">Calibrate the tracking positions</string>
     <string name="dialog_positioning_locations_label">Select location</string>
-    <string-array name="dialog_positioning_locations_names">
-        <item >Kitchen</item>
-        <item >Bedroom</item>
-        <item >Livingroom</item>
-    </string-array><string name="dialog_positioning_record_on">Record started</string>
+    <string name="dialog_positioning_record_on">Record started</string>
     <string name="dialog_positioning_record_off">Record stopped</string>
     <string name="dialog_positioning_save_label">Current saved positions</string>
     <plurals name="dialog_positioning_save_count">
@@ -32,6 +28,6 @@
     <string name="pref_communication_pass_title">Password</string>
     <string name="pref_communication_serverport_title">Serverport</string>
     <string name="pref_communication_serverport_summary">%d</string>
-    <string name="pref_communication_zeroconfigport_title">Zeroconfigport</string>
-    <string name="pref_communication_zeroconfigport_summary">%d</string>
+    <string name="pref_communication_zeroconfport_title">Zerocongport</string>
+    <string name="pref_communication_zeroconfport_summary">%d</string>
 </resources>

@@ -27,13 +27,9 @@ public class MainApplication extends Application {
 		database = new DatabaseClass();
 		com = new CommunicationClass(this);
 		pos = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
-
 		if (pref.getBoolean("pref_positioning_tracking", false)) {
 			startService(positioningService);
 		}
-
-		pos.updateLocations(this.getResources().getStringArray(R.array.dialog_positioning_locations_names));
-
 		startService(communicationService);
 	}
 

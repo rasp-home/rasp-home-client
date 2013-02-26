@@ -30,19 +30,19 @@
             android:title="@string/pref_communication_pass_title"
             android:defaultValue=""/>
         <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
+            android:key="pref_communication_zeroconfport"
+            android:title="@string/pref_communication_zeroconfport_title"
+            android:summary="@string/pref_communication_zeroconfport_summary"
+            android:defaultValue="1234"
+            custom:minValue="1024"
+            android:dialogLayout="@layout/numberpicker_dialog"/>
+        <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
             android:key="pref_communication_serverport"
             android:title="@string/pref_communication_serverport_title"
             android:summary="@string/pref_communication_serverport_summary"
             android:defaultValue="8888"
             custom:minValue="1024"
             custom:maxValue="65535"
-            android:dialogLayout="@layout/numberpicker_dialog"/>
-        <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
-            android:key="pref_communication_zeroconfigport"
-            android:title="@string/pref_communication_zeroconfigport_title"
-            android:summary="@string/pref_communication_zeroconfigport_summary"
-            android:defaultValue="1234"
-            custom:minValue="1024"
             android:dialogLayout="@layout/numberpicker_dialog"/>
     </PreferenceCategory>
 </PreferenceScreen>

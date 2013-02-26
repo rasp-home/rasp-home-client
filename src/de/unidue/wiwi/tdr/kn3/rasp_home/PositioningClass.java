@@ -46,11 +46,12 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 
 	public void updateLocations(String[] updateLocations) {
 		for (String location : updateLocations) {
-			if (!locations.containsKey(location)) {
+			if (!meanLocations.containsKey(location)) {
 				locations.put(location, new ArrayList<Position>());
+				meanLocations.put(location, new Position());
 			}
 		}
-		for (String location : locations.keySet()) {
+		for (String location : meanLocations.keySet()) {
 			boolean contains = false;
 			for (String updateLocation : updateLocations) {
 				if (location.equals(updateLocation)) {
@@ -60,28 +61,27 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 			}
 			if (!contains) {
 				locations.remove(location);
+				meanLocations.remove(location);
 			}
 		}
 	}
 
 	public Set<String> getLocations() {
-		return locations.keySet();
+		return meanLocations.keySet();
 	}
 
 	public int getPositionsCount(String location) {
-		if (locations.containsKey(location)) {
-			return locations.get(location).size();
+		if (meanLocations.containsKey(location)) {
+			return meanLocations.get(location).getUpdates();
 		} else {
 			return 0;
 		}
 	}
 
 	public boolean removePositions(String location) {
-		if (locations.containsKey(location)) {
+		if (meanLocations.containsKey(location)) {
 			locations.get(location).clear();
-			if (meanLocations.containsKey(location)) {
-				meanLocations.remove(location);
-			}
+			meanLocations.remove(location);
 			return true;
 		} else {
 			return false;
@@ -109,13 +109,9 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 	}
 
 	private boolean addPositionScanResults(String location, List<ScanResult> results) {
-		if (locations.containsKey(location) && results.size() >= 3) {
+		if (meanLocations.containsKey(location) && results.size() >= 3) {
 			locations.get(location).add(new Position(results));
-			if (meanLocations.containsKey(location)) {
-				meanLocations.get(location).updatePosition(results);
-			} else {
-				meanLocations.put(location, new Position(results));
-			}
+			meanLocations.get(location).updatePosition(results);
 			return true;
 		} else {
 			return false;
@@ -184,13 +180,15 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 
 		private Map<String, Integer> stations;
 		private int updates;
+		
+		public Position() {
+			stations = new HashMap<String, Integer>();
+			updates = 0;
+		}
 
 		public Position(List<ScanResult> results) {
-			stations = new HashMap<String, Integer>();
-			updates = 1;
-			for (ScanResult result : results) {
-				stations.put(result.BSSID, result.level);
-			}
+			this();
+			updatePosition(results);
 		}
 
 		public int getUpdates() {
