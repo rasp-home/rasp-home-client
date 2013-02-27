@@ -1,19 +1,69 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
+
+import java.util.List;
+
+import de.unidue.wiwi.tdr.kn3.rasp_home.DatabaseClass.Room;
+import android.app.ActionBar;
+import android.app.ActionBar.OnNavigationListener;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+//import android.widget.SpinnerAdapter;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
+	//TODO
+	//Insert real rooms from Backend
+	
+	
+	//List<Room> roomsList= DatabaseClass.Room.GetRooms(null);
+	String[] room = new String[1];
 
+	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-	}
+		int i=0;
+		room[0]="Kitchen";
+	//	while(roomsList.get(i)!=null)
+		//	{room[i]=roomsList.get(i).name; i++;}
+		
+		ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+//		SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.action_list,
+//		          android.R.layout.simple_spinner_dropdown_item);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_spinner_dropdown_item, room);
+		ActionBar.OnNavigationListener navigationListener = new OnNavigationListener() {
+			 
+            @Override
+            public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+                Toast.makeText(getBaseContext(), "You selected : " + room[itemPosition]  , Toast.LENGTH_SHORT).show();
+        //TODO        
+                //Change View or Activity
+                return false;
+            }
+        };
+ 
+		actionBar.setListNavigationCallbacks(adapter, navigationListener);
+	
 
+		}
+	
+//	OnNavigationListener mOnNavigationListener = new OnNavigationListener() {
+//		  // Get the same strings provided for the drop-down's ArrayAdapter
+//		  String[] strings = getResources().getStringArray(R.array.action_list);
+//
+//		  public boolean onNavigationItemSelected(int position, long itemId) {
+//		   
+//		    return true;
+//		  }
+//		};
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
