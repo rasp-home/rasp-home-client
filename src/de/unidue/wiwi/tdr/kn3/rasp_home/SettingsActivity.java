@@ -45,6 +45,10 @@ public class SettingsActivity extends Activity {
 			if (pref != null)
 				pref.setSummary(String.format(getString(R.string.pref_communication_zeroconfport_summary), pref
 						.getSharedPreferences().getInt(pref.getKey(), 0)));
+			pref = findPreference("pref_communication_timeout");
+			if (pref != null)
+				pref.setSummary(String.format(getString(R.string.pref_communication_timeout_summary), pref
+						.getSharedPreferences().getInt(pref.getKey(), 0)));
 		}
 
 		@Override
@@ -71,21 +75,30 @@ public class SettingsActivity extends Activity {
 			} else if (arg1.equals("pref_positioning_interval")) {
 				pref.setSummary(String.format(getString(R.string.pref_positioning_interval_summary),
 						arg0.getInt(arg1, 0)));
-
 				if (MainApplication.pref.getBoolean("pref_positioning_tracking", false)) {
 					getActivity().stopService(MainApplication.positioningService);
 					getActivity().startService(MainApplication.positioningService);
 				}
 			} else if (arg1.equals("pref_communication_user")) {
 				pref.setSummary(arg0.getString(arg1, ""));
+				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", ""), arg0.getString("pref_communication_pass", ""));
 			} else if (arg1.equals("pref_communication_pass")) {
 				pref.setSummary(arg0.getString(arg1, ""));
+				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", ""), arg0.getString("pref_communication_pass", ""));
 			} else if (arg1.equals("pref_communication_serverport")) {
 				pref.setSummary(String.format(getString(R.string.pref_communication_serverport_summary),
 						arg0.getInt(arg1, 0)));
+				MainApplication.com.server.Stop();
+				MainApplication.com.server.Start(MainApplication.pref.getInt("pref_communication_serverport", 8888));
 			} else if (arg1.equals("pref_communication_zeroconfigport")) {
 				pref.setSummary(String.format(getString(R.string.pref_communication_zeroconfport_summary),
 						arg0.getInt(arg1, 0)));
+				MainApplication.com.zeroconf.Stop();
+				MainApplication.com.zeroconf.Start(MainApplication.pref.getInt("pref_communication_zeroconfport", 1234));				
+			} else if (arg1.equals("pref_communication_timeout")) {
+				pref.setSummary(String.format(getString(R.string.pref_communication_timeout_summary),
+						arg0.getInt(arg1, 0)));
+				MainApplication.com.client.SetTimeout(MainApplication.pref.getInt("pref_communication_timeout", 5000));				
 			}
 		}
 

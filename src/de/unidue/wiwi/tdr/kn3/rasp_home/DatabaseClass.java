@@ -12,14 +12,12 @@ public class DatabaseClass {
 
 	public List<Node> nodes;
 	public List<Room> rooms;
-	public User user;
-	public Backend backend;
+	public List<User> users;
 
 	public DatabaseClass() {
 		nodes = new ArrayList<Node>();
 		rooms = new ArrayList<Room>();
-		user = new User();
-		backend = new Backend();
+		users = new ArrayList<User>();
 	}
 
 	private static String GetText(XmlPullParser parser, String name) {
@@ -71,7 +69,7 @@ public class DatabaseClass {
 			export += "</node>";
 			return export;
 		}
-		
+
 		public static String ExportAll(List<Node> elements, List<String> attribs) {
 			String export = "<nodes>";
 			for (Node element : elements) {
@@ -89,7 +87,7 @@ public class DatabaseClass {
 			}
 			return null;
 		}
-		
+
 		public static List<Node> GetAll(List<Node> elements, String room) {
 			if (room == null) {
 				return elements;
@@ -113,7 +111,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void AddAll(List<Node> elements, List<Node> new_elements) {
 			elements.addAll(new_elements);
 		}
@@ -127,7 +125,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void DelAll(List<Node> elements) {
 			elements.clear();
 		}
@@ -236,7 +234,7 @@ public class DatabaseClass {
 			export += "</room>";
 			return export;
 		}
-		
+
 		public static String ExportAll(List<Room> elements, List<String> attribs) {
 			String export = "<rooms>";
 			for (Room element : elements) {
@@ -254,7 +252,7 @@ public class DatabaseClass {
 			}
 			return null;
 		}
-		
+
 		public static List<Room> GetAll(List<Room> elements) {
 			return elements;
 		}
@@ -268,7 +266,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void AddAll(List<Room> elements, List<Room> new_elements) {
 			elements.addAll(new_elements);
 		}
@@ -282,7 +280,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void DelAll(List<Room> elements) {
 			elements.clear();
 		}
@@ -388,7 +386,7 @@ public class DatabaseClass {
 			export += "</user>";
 			return export;
 		}
-		
+
 		public static String ExportAll(List<User> elements, List<String> attribs) {
 			String export = "<users>";
 			for (User element : elements) {
@@ -406,7 +404,7 @@ public class DatabaseClass {
 			}
 			return null;
 		}
-		
+
 		public static List<User> GetAll(List<User> elements, String room) {
 			if (room == null) {
 				return elements;
@@ -430,7 +428,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void AddAll(List<User> elements, List<User> new_elements) {
 			elements.addAll(new_elements);
 		}
@@ -444,7 +442,7 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-		
+
 		public static void DelAll(List<User> elements) {
 			elements.clear();
 		}
@@ -546,10 +544,5 @@ public class DatabaseClass {
 				return null;
 			}
 		}
-	}
-
-	public static class Backend {
-		public String ip_port = null;
-		public String name_pass = null;
 	}
 }

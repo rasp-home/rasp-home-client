@@ -44,5 +44,13 @@
             custom:minValue="1024"
             custom:maxValue="65535"
             android:dialogLayout="@layout/numberpicker_dialog"/>
+        <de.unidue.wiwi.tdr.kn3.rasp_home.NumberPickerPreference
+            android:key="pref_communication_timeout"
+            android:title="@string/pref_communication_timeout_title"
+            android:summary="@string/pref_communication_timeout_summary"
+            android:defaultValue="5000"
+            custom:minValue="0"
+            custom:maxValue="10000"
+            android:dialogLayout="@layout/numberpicker_dialog"/>
     </PreferenceCategory>
 </PreferenceScreen>

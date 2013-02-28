@@ -1,11 +1,10 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
-import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.Message.Type;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-public class CommunicationService extends IntentService implements Observer<CommunicationClass.Message> {
+public class CommunicationService extends IntentService implements Observer<CommunicationClass.RequestMessage> {
 
 	public CommunicationService() {
 		super("CommunicationService");
@@ -17,7 +16,9 @@ public class CommunicationService extends IntentService implements Observer<Comm
 		Log.d(MainApplication.RH_TAG, "Start CommunicationService");
 		MainApplication.com.zeroconf.observer.addObserver(this);
 		MainApplication.com.server.observer.addObserver(this);
-		MainApplication.com.client.setUserPass(MainApplication.pref.getString("pref_communication_user", ""), MainApplication.pref.getString("pref_communication_pass", ""));
+		MainApplication.com.client.SetUserPass(MainApplication.pref.getString("pref_communication_user", ""),
+				MainApplication.pref.getString("pref_communication_pass", ""));
+		MainApplication.com.client.SetTimeout(MainApplication.pref.getInt("pref_communication_timeout", 5000));
 		MainApplication.com.zeroconf.Start(MainApplication.pref.getInt("pref_communication_zeroconfport", 1234));
 		MainApplication.com.server.Start(MainApplication.pref.getInt("pref_communication_serverport", 8888));
 	}
@@ -44,12 +45,13 @@ public class CommunicationService extends IntentService implements Observer<Comm
 	}
 
 	@Override
-	public void update(Observable<CommunicationClass.Message> o, CommunicationClass.Message arg) {
-		Log.d(MainApplication.RH_TAG, "Get message: " + arg.type.toString() + " " + arg.title + " " + arg.content);
-		if (arg.type == Type.zeroconfig) {
-			MainApplication.com.client.setServerIpPort(arg.content);
+	public void update(Observable<CommunicationClass.RequestMessage> o, CommunicationClass.RequestMessage arg) {
+		Log.d(MainApplication.RH_TAG, "Get message: " + arg.method + " " + arg.type + " " + arg.name + " " + arg.attrib
+				+ " " + arg.value);
+		if (arg.method.equals("ZERO") && arg.type.equals("Backend")) {
+			MainApplication.com.client.SetServerIpPort(arg.value);
 		}
-		//MainApplication.com.server.setAuthorizedUserPass("ich:123");
-		//MainApplication.com.client.SendRequestPost("/nodes", "hallo node");
+		// MainApplication.com.server.SetAuthorizedUserPass("ich:123");
+		// MainApplication.com.client.SendRequestPost("/nodes", "hallo node");
 	}
 }

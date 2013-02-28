@@ -24,6 +24,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -34,6 +35,8 @@ import org.apache.http.impl.DefaultHttpServerConnection;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.BasicHttpProcessor;
 import org.apache.http.protocol.HttpContext;
@@ -46,7 +49,6 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.util.Base64;
 import android.util.Log;
-import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.Message.Type;
 
 public class CommunicationClass extends Thread {
 
@@ -76,19 +78,41 @@ public class CommunicationClass extends Thread {
 		}
 	}
 
-	public static class Message {
-		public static enum Type {
-			zeroconfig, updatenodevalue, updatenoderoomandtitle, addroom, deleteroom, addnode, deletenode
+	public static class RequestMessage {
+		public Method method;
+		public Type type;
+		public String name;
+		public String attrib;
+		public String value;
+
+		public enum Method {
+			GET, PUT, POST, DELETE, ZERO
 		}
 
-		public Type type;
-		public String title;
-		public String content;
+		public enum Type {
+			Backend, Monitor, Node, Room, User
+		}
 
-		public Message(Type type, String title, String content) {
+		public RequestMessage(Method method, Type type, String name, String attrib, String value) {
+			this.method = method;
 			this.type = type;
-			this.title = title;
-			this.content = content;
+			this.name = name;
+			this.attrib = attrib;
+			this.value = value;
+		}
+	}
+
+	public static class ResponseMessage {
+		public int status;
+		public String reason;
+		public String type;
+		public String value;
+
+		public ResponseMessage(int status, String reason, String type, String value) {
+			this.status = status;
+			this.reason = reason;
+			this.type = type;
+			this.value = value;
 		}
 	}
 
@@ -111,63 +135,87 @@ public class CommunicationClass extends Thread {
 			}
 		}
 
-		public boolean SendRequestGet(String uri) {
-			HttpGet request = new HttpGet("https://" + ip_port + uri);
-			return SendRequest(request);
+		public void SetTimeout(int timeout) {
+			HttpParams params = client.getParams();
+			HttpConnectionParams.setConnectionTimeout(params, timeout);
+			HttpConnectionParams.setSoTimeout(params, timeout);
 		}
 
-		public boolean SendRequestDelete(String uri) {
-			HttpDelete request = new HttpDelete("https://" + ip_port + uri);
-			return SendRequest(request);
-		}
-
-		public boolean SendRequestPost(String uri, String content) {
-			try {
-				HttpPost request = new HttpPost("https://" + ip_port + uri);
-				request.setEntity(new StringEntity(content, "UTF-8"));
-				return SendRequest(request);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
+		public ResponseMessage SendRequest(RequestMessage message) {
+			HttpUriRequest request = null;
+			String uri = "/";
+			switch (message.type) {
+			case Backend:
+				uri += "backend";
+				break;
+			case Monitor:
+				uri += "monitor";
+				break;
+			case Node:
+				uri += "node";
+				break;
+			case Room:
+				uri += "room";
+				break;
+			case User:
+				uri += "user";
+				break;
 			}
+			uri += "/" + message.attrib;
+			switch (message.method) {
+			case GET:
+				request = new HttpGet("https://" + ip_port + uri);
+				break;
+			case PUT:
+				request = new HttpPut("https://" + ip_port + uri);
+				try {
+					((HttpPut) request).setEntity(new StringEntity(message.value, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				break;
+			case POST:
+				request = new HttpPost("https://" + ip_port + uri);
+				try {
+					((HttpPost) request).setEntity(new StringEntity(message.value, "UTF-8"));
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				break;
+			case DELETE:
+				request = new HttpDelete("https://" + ip_port + uri);
+				break;
+			}
+			return SendRequest(request);
 		}
 
-		private boolean SendRequest(HttpUriRequest request) {
+		private ResponseMessage SendRequest(HttpUriRequest request) {
 			try {
 				request.addHeader("Content-Type", "text/plain");
 				UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, pass);
 				request.addHeader(BasicScheme.authenticate(creds, "UTF-8", false));
 				HttpResponse response = client.execute(request);
-				if (response.getStatusLine().getStatusCode() == 200) {
-					Header contentHeader = response.getFirstHeader("Content-Type");
-					if (contentHeader != null) {
-						if (contentHeader.getValue().equals("text/plain")) {
-							String responseString = GetStringOfInputStream(response.getEntity().getContent());
-							Log.d(MainApplication.RH_TAG, "Response " + responseString);
-						}
-					}
-					return true;
-				} else {
-					return false;
-				}
+				Header contentHeader = response.getFirstHeader("Content-Type");
+				return new ResponseMessage(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase(),
+						contentHeader != null ? contentHeader.getValue() : null, GetStringOfInputStream(response
+								.getEntity().getContent()));
 			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
+				return null;
 			}
 		}
 
-		public void setUserPass(String user, String pass) {
+		public void SetUserPass(String user, String pass) {
 			this.user = user;
 			this.pass = pass;
 		}
 
-		public void setServerIpPort(String ip_port) {
+		public void SetServerIpPort(String ip_port) {
 			this.ip_port = ip_port;
 		}
 	}
 
 	public static class Server extends Thread {
-		public Observable<Message> observer;
+		public Observable<RequestMessage> observer;
 
 		private Context context;
 		private HttpService service;
@@ -180,63 +228,63 @@ public class CommunicationClass extends Thread {
 
 		public Server(Context context) {
 			this.context = context;
-			observer = new Observable<Message>();
+			observer = new Observable<RequestMessage>();
 			service = new HttpService(new BasicHttpProcessor(), new DefaultConnectionReuseStrategy(),
 					new DefaultHttpResponseFactory());
 			registry = new HttpRequestHandlerRegistry();
-			registry.register("/nodes*", new HttpRequestHandler() {
+			registry.register("/node/*", new HttpRequestHandler() {
 				@Override
 				public void handle(HttpRequest request, HttpResponse response, HttpContext context)
 						throws HttpException, IOException {
 					if (AuthorizeUser(request, response)) {
 						String[] requestArray = request.getRequestLine().getUri().split("/");
+						RequestMessage.Method method = null;
+						String name = null;
+						String attrib = null;
 						if (request.getRequestLine().getMethod().equals("PUT")) {
-							if (requestArray.length == 2) {
-								Server.this.observer.notifyObservers(new Message(Type.addnode, request.getRequestLine()
-										.getUri(), GetStringOfInputStream(((HttpEntityEnclosingRequest) request)
-										.getEntity().getContent())));
-							} else if (requestArray.length == 3) {
-								Server.this.observer.notifyObservers(new Message(Type.updatenoderoomandtitle, request
-										.getRequestLine().getUri(),
-										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-												.getContent())));
-							} else if (requestArray.length == 4) {
-								Server.this.observer.notifyObservers(new Message(Type.updatenodevalue, request
-										.getRequestLine().getUri(),
-										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-												.getContent())));
-							}
+							method = RequestMessage.Method.PUT;
+						} else if (request.getRequestLine().getMethod().equals("POST")) {
+							method = RequestMessage.Method.POST;
 						} else if (request.getRequestLine().getMethod().equals("DELETE")) {
-							if (requestArray.length == 3) {
-								Server.this.observer.notifyObservers(new Message(Type.deletenode, request
-										.getRequestLine().getUri(),
-										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-												.getContent())));
-							}
+							method = RequestMessage.Method.DELETE;
 						}
+						if (requestArray.length >= 3) {
+							name = requestArray[2];
+						}
+						if (requestArray.length >= 4) {
+							attrib = requestArray[3];
+						}
+						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Node, name,
+								attrib, GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
+										.getContent())));
 					}
 				}
 			});
-			registry.register("/rooms*", new HttpRequestHandler() {
+			registry.register("/room/*", new HttpRequestHandler() {
 				@Override
 				public void handle(HttpRequest request, HttpResponse response, HttpContext context)
 						throws HttpException, IOException {
 					if (AuthorizeUser(request, response)) {
 						String[] requestArray = request.getRequestLine().getUri().split("/");
-						if (request.getRequestLine().getMethod().equals("POST")) {
-							if (requestArray.length == 2) {
-								Server.this.observer.notifyObservers(new Message(Type.addroom, request.getRequestLine()
-										.getUri(), GetStringOfInputStream(((HttpEntityEnclosingRequest) request)
-										.getEntity().getContent())));
-							}
+						RequestMessage.Method method = null;
+						String name = null;
+						String attrib = null;
+						if (request.getRequestLine().getMethod().equals("PUT")) {
+							method = RequestMessage.Method.PUT;
+						} else if (request.getRequestLine().getMethod().equals("POST")) {
+							method = RequestMessage.Method.POST;
 						} else if (request.getRequestLine().getMethod().equals("DELETE")) {
-							if (requestArray.length == 3) {
-								Server.this.observer.notifyObservers(new Message(Type.deleteroom, request
-										.getRequestLine().getUri(),
-										GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-												.getContent())));
-							}
+							method = RequestMessage.Method.DELETE;
 						}
+						if (requestArray.length >= 3) {
+							name = requestArray[2];
+						}
+						if (requestArray.length >= 4) {
+							attrib = requestArray[3];
+						}
+						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Room, name,
+								attrib, GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
+										.getContent())));
 					}
 				}
 			});
@@ -255,7 +303,7 @@ public class CommunicationClass extends Thread {
 			}
 		}
 
-		public boolean isRun() {
+		public boolean IsRun() {
 			return run;
 		}
 
@@ -328,13 +376,13 @@ public class CommunicationClass extends Thread {
 			}
 		}
 
-		public void setAuthorizedUserPass(String user_pass) {
+		public void SetAuthorizedUserPass(String user_pass) {
 			this.user_pass = user_pass;
 		}
 	}
 
 	public static class Zeroconf extends Thread {
-		public Observable<Message> observer;
+		public Observable<RequestMessage> observer;
 
 		private Context context;
 		private DatagramSocket socket;
@@ -343,14 +391,14 @@ public class CommunicationClass extends Thread {
 
 		public Zeroconf(Context context) {
 			this.context = context;
-			observer = new Observable<Message>();
+			observer = new Observable<RequestMessage>();
 		}
 
-		public boolean isRun() {
+		public boolean IsRun() {
 			return run;
 		}
 
-		private InetAddress getBroadcastAddress() throws IOException {
+		private InetAddress GetBroadcastAddress() throws IOException {
 			WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 			DhcpInfo dhcp = wifi.getDhcpInfo();
 
@@ -398,7 +446,7 @@ public class CommunicationClass extends Thread {
 			super.run();
 			try {
 				byte[] data = "hello client".getBytes("UTF-8");
-				DatagramPacket packet = new DatagramPacket(data, data.length, getBroadcastAddress(), port);
+				DatagramPacket packet = new DatagramPacket(data, data.length, GetBroadcastAddress(), port);
 
 				Log.d(MainApplication.RH_TAG, "Send hello: " + packet.getAddress().toString() + ":" + packet.getPort());
 
@@ -411,8 +459,9 @@ public class CommunicationClass extends Thread {
 					socket.receive(packet);
 
 					if ((new String(packet.getData(), "UTF-8")).equals("hello backend")) {
-						observer.notifyObservers(new Message(Type.zeroconfig, null, packet.getAddress().toString()
-								+ ":" + packet.getPort()));
+						observer.notifyObservers(new RequestMessage(RequestMessage.Method.ZERO,
+								RequestMessage.Type.Backend, null, null, packet.getAddress().toString() + ":"
+										+ packet.getPort()));
 
 						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":"
 								+ packet.getPort());
@@ -423,52 +472,4 @@ public class CommunicationClass extends Thread {
 			}
 		}
 	}
-
-	// X509TrustManager tm = new X509TrustManager() {
-	// public void checkClientTrusted(X509Certificate[] xcs, String
-	// string) throws CertificateException {
-	// }
-	//
-	// public void checkServerTrusted(X509Certificate[] xcs, String
-	// string) throws CertificateException {
-	// }
-	//
-	// public X509Certificate[] getAcceptedIssuers() {
-	// return null;
-	// }
-	// };
-	// client = new DefaultHttpClient();
-	// SSLContext clientCtx = SSLContext.getInstance("TLS");
-	// clientCtx.init(null, new TrustManager[] { tm }, null);
-	// SSLSocketFactory ssf = new MySSLSocketFactory(clientCtx);
-	// ssf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-	// ClientConnectionManager ccm = client.getConnectionManager();
-	// SchemeRegistry sr = ccm.getSchemeRegistry();
-	// sr.register(new Scheme("https", ssf, 443));
-	// client = new DefaultHttpClient(ccm, client.getParams());
-
-	// private class MySSLSocketFactory extends SSLSocketFactory {
-	// SSLContext sslContext = SSLContext.getInstance("TLS");
-	//
-	// public MySSLSocketFactory(SSLContext context) throws
-	// KeyManagementException, NoSuchAlgorithmException,
-	// KeyStoreException, UnrecoverableKeyException {
-	// super(null);
-	// sslContext = context;
-	// }
-	//
-	// @Override
-	// public Socket createSocket(Socket socket, String host, int port, boolean
-	// autoClose) throws IOException,
-	// UnknownHostException {
-	// return sslContext.getSocketFactory().createSocket(socket, host, port,
-	// autoClose);
-	// }
-	//
-	// @Override
-	// public Socket createSocket() throws IOException {
-	// return sslContext.getSocketFactory().createSocket();
-	// }
-	// }
-
 }

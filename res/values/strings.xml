@@ -30,4 +30,6 @@
     <string name="pref_communication_serverport_summary">%d</string>
     <string name="pref_communication_zeroconfport_title">Zerocongport</string>
     <string name="pref_communication_zeroconfport_summary">%d</string>
+    <string name="pref_communication_timeout_title">Timeout</string>
+    <string name="pref_communication_timeout_summary">%d ms</string>
 </resources>
