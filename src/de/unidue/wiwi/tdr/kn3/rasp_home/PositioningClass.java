@@ -135,6 +135,7 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 
 	@Override
 	public void update(Observable<List<ScanResult>> o, List<ScanResult> arg) {
+		//TODO Update automatical new positions
 		if (recordLocation != null) {
 			if (addPositionScanResults(recordLocation, arg)) {
 				observer.notifyObservers("");

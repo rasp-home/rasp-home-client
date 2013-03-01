@@ -3,6 +3,8 @@ package de.unidue.wiwi.tdr.kn3.rasp_home;
 
 import java.util.List;
 
+import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Method;
+import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Type;
 import de.unidue.wiwi.tdr.kn3.rasp_home.DatabaseClass.Room;
 import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
@@ -30,6 +32,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		int i=0;
 		room[0]="Kitchen";
+		//CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
 	//	while(roomsList.get(i)!=null)
 		//	{room[i]=roomsList.get(i).name; i++;}
 		

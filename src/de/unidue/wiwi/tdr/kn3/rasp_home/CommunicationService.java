@@ -16,8 +16,8 @@ public class CommunicationService extends IntentService implements Observer<Comm
 		Log.d(MainApplication.RH_TAG, "Start CommunicationService");
 		MainApplication.com.zeroconf.observer.addObserver(this);
 		MainApplication.com.server.observer.addObserver(this);
-		MainApplication.com.client.SetUserPass(MainApplication.pref.getString("pref_communication_user", ""),
-				MainApplication.pref.getString("pref_communication_pass", ""));
+		MainApplication.com.client.SetUserPass(MainApplication.pref.getString("pref_communication_user", "") + ":"
+				+ MainApplication.pref.getString("pref_communication_pass", ""));
 		MainApplication.com.client.SetTimeout(MainApplication.pref.getInt("pref_communication_timeout", 5000));
 		MainApplication.com.zeroconf.Start(MainApplication.pref.getInt("pref_communication_zeroconfport", 1234));
 		MainApplication.com.server.Start(MainApplication.pref.getInt("pref_communication_serverport", 8888));

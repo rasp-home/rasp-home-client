@@ -84,6 +84,7 @@ public class CommunicationClass extends Thread {
 		public String name;
 		public String attrib;
 		public String value;
+		public Value_Type value_type;
 
 		public enum Method {
 			GET, PUT, POST, DELETE, ZERO
@@ -92,33 +93,42 @@ public class CommunicationClass extends Thread {
 		public enum Type {
 			Backend, Monitor, Node, Room, User
 		}
+		
+		public enum Value_Type {
+			text_plain, text_xml
+		}
 
-		public RequestMessage(Method method, Type type, String name, String attrib, String value) {
+		public RequestMessage(Method method, Type type, String name, String attrib, String value, Value_Type value_type) {
 			this.method = method;
 			this.type = type;
 			this.name = name;
 			this.attrib = attrib;
 			this.value = value;
+			this.value_type = value_type;
 		}
 	}
 
 	public static class ResponseMessage {
 		public int status;
 		public String reason;
-		public String type;
 		public String value;
+		public Value_Type value_type;
 
-		public ResponseMessage(int status, String reason, String type, String value) {
+		public enum Value_Type {
+			text_plain, text_xml
+		}
+		
+		public ResponseMessage(int status, String reason, String value, Value_Type value_type) {
 			this.status = status;
 			this.reason = reason;
-			this.type = type;
 			this.value = value;
+			this.value_type = value_type;
 		}
 	}
 
 	public static class Client {
 		private DefaultHttpClient client;
-		private String user = null, pass = null;
+		private String user_pass = null;
 		private String ip_port = null;
 
 		public Client(Context context) {
@@ -143,7 +153,7 @@ public class CommunicationClass extends Thread {
 
 		public ResponseMessage SendRequest(RequestMessage message) {
 			HttpUriRequest request = null;
-			String uri = "/";
+			String uri = "https://" + ip_port + "/";
 			switch (message.type) {
 			case Backend:
 				uri += "backend";
@@ -161,13 +171,14 @@ public class CommunicationClass extends Thread {
 				uri += "user";
 				break;
 			}
-			uri += "/" + message.attrib;
+			uri += message.name != null ? "/" + message.name : null;
+			uri += message.name != null ? "/" + message.attrib : null;
 			switch (message.method) {
 			case GET:
-				request = new HttpGet("https://" + ip_port + uri);
+				request = new HttpGet(uri);
 				break;
 			case PUT:
-				request = new HttpPut("https://" + ip_port + uri);
+				request = new HttpPut(uri);
 				try {
 					((HttpPut) request).setEntity(new StringEntity(message.value, "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
@@ -175,7 +186,7 @@ public class CommunicationClass extends Thread {
 				}
 				break;
 			case POST:
-				request = new HttpPost("https://" + ip_port + uri);
+				request = new HttpPost(uri);
 				try {
 					((HttpPost) request).setEntity(new StringEntity(message.value, "UTF-8"));
 				} catch (UnsupportedEncodingException e) {
@@ -183,30 +194,38 @@ public class CommunicationClass extends Thread {
 				}
 				break;
 			case DELETE:
-				request = new HttpDelete("https://" + ip_port + uri);
+				request = new HttpDelete(uri);
 				break;
 			}
-			return SendRequest(request);
-		}
-
-		private ResponseMessage SendRequest(HttpUriRequest request) {
-			try {
+			switch (message.value_type) {
+			case text_plain:
 				request.addHeader("Content-Type", "text/plain");
-				UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, pass);
-				request.addHeader(BasicScheme.authenticate(creds, "UTF-8", false));
+				break;
+			case text_xml:
+				request.addHeader("Content-Type", "text/xml");
+				break;
+			}
+			UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user_pass);
+			request.addHeader(BasicScheme.authenticate(creds, "UTF-8", false));
+			try {
 				HttpResponse response = client.execute(request);
-				Header contentHeader = response.getFirstHeader("Content-Type");
-				return new ResponseMessage(response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase(),
-						contentHeader != null ? contentHeader.getValue() : null, GetStringOfInputStream(response
-								.getEntity().getContent()));
+				int status = response.getStatusLine().getStatusCode();
+				String reason = response.getStatusLine().getReasonPhrase();
+				String value = GetStringOfInputStream(response.getEntity().getContent());
+				ResponseMessage.Value_Type value_type = null;
+				if (response.getEntity().getContentType().getValue().equals("text/plain")) {
+					value_type = ResponseMessage.Value_Type.text_plain;
+				} else if (response.getEntity().getContentType().getValue().equals("text/xml")) {
+					value_type = ResponseMessage.Value_Type.text_xml;
+				}
+				return new ResponseMessage(status, reason, value, value_type);
 			} catch (Exception e) {
 				return null;
 			}
 		}
 
-		public void SetUserPass(String user, String pass) {
-			this.user = user;
-			this.pass = pass;
+		public void SetUserPass(String user_pass) {
+			this.user_pass = user_pass;
 		}
 
 		public void SetServerIpPort(String ip_port) {
@@ -241,6 +260,8 @@ public class CommunicationClass extends Thread {
 						RequestMessage.Method method = null;
 						String name = null;
 						String attrib = null;
+						String value = GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity().getContent());
+						RequestMessage.Value_Type value_type = null;
 						if (request.getRequestLine().getMethod().equals("PUT")) {
 							method = RequestMessage.Method.PUT;
 						} else if (request.getRequestLine().getMethod().equals("POST")) {
@@ -254,9 +275,13 @@ public class CommunicationClass extends Thread {
 						if (requestArray.length >= 4) {
 							attrib = requestArray[3];
 						}
+						if (((HttpEntityEnclosingRequest) request).getEntity().getContentType().getValue().equals("text/plain")) {
+							value_type = RequestMessage.Value_Type.text_plain;
+						} else if (((HttpEntityEnclosingRequest) request).getEntity().getContentType().getValue().equals("text/xml")) {
+							value_type = RequestMessage.Value_Type.text_xml;
+						}
 						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Node, name,
-								attrib, GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-										.getContent())));
+								attrib, value, value_type));
 					}
 				}
 			});
@@ -269,6 +294,8 @@ public class CommunicationClass extends Thread {
 						RequestMessage.Method method = null;
 						String name = null;
 						String attrib = null;
+						String value = GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity().getContent());
+						RequestMessage.Value_Type value_type = null;
 						if (request.getRequestLine().getMethod().equals("PUT")) {
 							method = RequestMessage.Method.PUT;
 						} else if (request.getRequestLine().getMethod().equals("POST")) {
@@ -282,9 +309,12 @@ public class CommunicationClass extends Thread {
 						if (requestArray.length >= 4) {
 							attrib = requestArray[3];
 						}
-						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Room, name,
-								attrib, GetStringOfInputStream(((HttpEntityEnclosingRequest) request).getEntity()
-										.getContent())));
+						if (((HttpEntityEnclosingRequest) request).getEntity().getContentType().getValue().equals("text/plain")) {
+							value_type = RequestMessage.Value_Type.text_plain;
+						} else if (((HttpEntityEnclosingRequest) request).getEntity().getContentType().getValue().equals("text/xml")) {
+							value_type = RequestMessage.Value_Type.text_xml;
+						}
+						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Room, name, attrib, value, value_type));
 					}
 				}
 			});
@@ -461,7 +491,7 @@ public class CommunicationClass extends Thread {
 					if ((new String(packet.getData(), "UTF-8")).equals("hello backend")) {
 						observer.notifyObservers(new RequestMessage(RequestMessage.Method.ZERO,
 								RequestMessage.Type.Backend, null, null, packet.getAddress().toString() + ":"
-										+ packet.getPort()));
+										+ packet.getPort(), null));
 
 						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":"
 								+ packet.getPort());

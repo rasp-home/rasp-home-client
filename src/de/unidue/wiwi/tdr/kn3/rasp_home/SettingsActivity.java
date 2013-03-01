@@ -81,10 +81,10 @@ public class SettingsActivity extends Activity {
 				}
 			} else if (arg1.equals("pref_communication_user")) {
 				pref.setSummary(arg0.getString(arg1, ""));
-				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", ""), arg0.getString("pref_communication_pass", ""));
+				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", "") + ":" + arg0.getString("pref_communication_pass", ""));
 			} else if (arg1.equals("pref_communication_pass")) {
 				pref.setSummary(arg0.getString(arg1, ""));
-				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", ""), arg0.getString("pref_communication_pass", ""));
+				MainApplication.com.client.SetUserPass(arg0.getString("pref_communication_user", "") + ":" + arg0.getString("pref_communication_pass", ""));
 			} else if (arg1.equals("pref_communication_serverport")) {
 				pref.setSummary(String.format(getString(R.string.pref_communication_serverport_summary),
 						arg0.getInt(arg1, 0)));
