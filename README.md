@@ -1,4 +1,4 @@
-android-positioning
+rasp-home-client
 ===================
 
-Android Prototype for Positioning
+Android client
