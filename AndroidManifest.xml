@@ -24,9 +24,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
         <service android:name="PositioningService" android:label="@string/service_positioning_label"></service>
         <service android:name="CommunicationService" android:label="@string/service_communication_label"></service>
-        <activity android:name="SettingsActivity" android:label="@string/activity_settings_label" android:parentActivityName="MainActivity">
+        <activity 
+            android:name="SettingsActivity" android:label="@string/activity_settings_label" android:parentActivityName="MainActivity">
+        </activity>
+        <activity
+                android:name="RoomControl"
+                android:label="@string/title_activity_ControlRoom" >
         </activity>
     </application>
 
