@@ -156,6 +156,7 @@ public class DatabaseClass {
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
+				parser.nextTag();
 				parser.require(XmlPullParser.START_TAG, null, "node");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
 					if (parser.getName().equals("name")) {
@@ -345,7 +346,6 @@ public class DatabaseClass {
 
 	public static class User {
 		public String name = null;
-		public Boolean login = null;
 		public String room = null;
 		public String receive_room = null;
 		public Boolean admin = null;
@@ -354,17 +354,6 @@ public class DatabaseClass {
 			String export = "<user>";
 			if (attribs.contains("name")) {
 				export += "<name>" + element.name + "</name>";
-			}
-			if (attribs.contains("login")) {
-				String login = null;
-				if (element.login != null) {
-					if (element.login == true) {
-						login = "True;";
-					} else {
-						login = "False";
-					}
-				}
-				export += "<login>" + login + "</login>";
 			}
 			if (attribs.contains("room")) {
 				export += "<room>" + element.room + "</room>";
@@ -450,12 +439,6 @@ public class DatabaseClass {
 		public static User EditOne(User element, String attrib, String value) {
 			if (attrib.equals("name")) {
 				element.name = value;
-			} else if (attrib.equals("login")) {
-				if (value.equals("True")) {
-					element.login = true;
-				} else {
-					element.login = false;
-				}
 			} else if (attrib.equals("room")) {
 				element.room = value;
 			} else if (attrib.equals("receive_room")) {
@@ -479,6 +462,7 @@ public class DatabaseClass {
 			XmlPullParser parser = Xml.newPullParser();
 			try {
 				parser.setInput(new StringReader(input));
+				parser.nextTag();
 				parser.require(XmlPullParser.START_TAG, null, "user");
 				while (parser.nextTag() != XmlPullParser.END_TAG) {
 					if (parser.getName().equals("name")) {
@@ -493,25 +477,19 @@ public class DatabaseClass {
 						if (room != null) {
 							EditOne(element, "room", room);
 						}
-					} else if (parser.getName().equals("title")) {
-						String title = GetText(parser, "title");
-						if (title != null) {
-							EditOne(element, "title", title);
+					} else if (parser.getName().equals("receive_room")) {
+						String receive_room = GetText(parser, "receive_room");
+						if (receive_room != null) {
+							EditOne(element, "receive_room", receive_room);
 						}
-					} else if (parser.getName().equals("type")) {
-						String type = GetText(parser, "type");
-						if (type != null) {
-							EditOne(element, "type", type);
+					}  else if (parser.getName().equals("admin")) {
+						String admin = GetText(parser, "admin");
+						if (admin != null) {
+							EditOne(element, "admin", admin);
 						}
-					} else if (parser.getName().equals("input")) {
-						input = GetText(parser, "input");
-						if (input != null) {
-							EditOne(element, "input", input);
-						}
-					} else if (parser.getName().equals("output")) {
-						String output = GetText(parser, "output");
-						if (output != null) {
-							EditOne(element, "output", output);
+					} else {
+						if (parser.next() == XmlPullParser.TEXT) {
+							parser.nextTag();
 						}
 					}
 				}
