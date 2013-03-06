@@ -80,7 +80,7 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 
 	public boolean removePositions(String location) {
 		if (meanLocations.containsKey(location)) {
-			locations.get(location).clear();
+			locations.remove(location);
 			meanLocations.remove(location);
 			return true;
 		} else {
@@ -144,6 +144,9 @@ public class PositioningClass implements Serializable, Observer<List<ScanResult>
 			}
 		} else {
 			lastLocation = getBestLocation(new PositioningClass.Position(arg));
+			if (lastLocation != null) {
+				addPositionScanResults(lastLocation, arg);
+			}
 			observer.notifyObservers(lastLocation);
 		}
 	}
