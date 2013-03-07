@@ -20,7 +20,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	
-
+	boolean selector = false;
 	String[] room = new String[1];
 
 	 
@@ -52,22 +52,22 @@ public class MainActivity extends Activity {
 		 
         @Override
         public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        	
+        	if(selector){
             Toast.makeText(getBaseContext(), "You selected : " + room[itemPosition]  , Toast.LENGTH_SHORT).show();
             
-  //   Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
+
             Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
             
           //Intent mit den Daten füllen
-            nextScreen.putExtra("Rooms", room);
-            nextScreen.putExtra("currentRoom", room[itemPosition]);
-     
+    /*     nextScreen.putExtra("Rooms", room);
+         nextScreen.putExtra("currentRoom", room[itemPosition]);*/
+nextScreen.putExtra("currentRoom", "test");
 
             // Intent starten und zur zweiten Activity wechseln
-            startActivity(nextScreen);
+            startActivity(nextScreen);}
+        	selector=true;
      
-            //TODO 
-            //true false whatever?
+            
             return true;
         }
     };

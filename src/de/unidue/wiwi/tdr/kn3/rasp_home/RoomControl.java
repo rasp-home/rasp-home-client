@@ -10,6 +10,7 @@ import android.app.ActionBar.OnNavigationListener;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
@@ -20,25 +21,34 @@ public class RoomControl  extends Activity {
 	
 
 	String[] room = null;
-
-	 
+	boolean selector = false;
+	String curRoom = "";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.activity_roomcontrol);
-		Bundle extras = getIntent().getExtras();
+			
+	Bundle extras = getIntent().getExtras();
 	    if (extras == null) {
+	    	   Toast.makeText(getBaseContext(), "An error occured, please wait while you are located  ", Toast.LENGTH_SHORT).show();
+	    	   //TODO
+	    	   //Locate user
+	    	  curRoom ="Located_room";
 	      return;
 	    }
-	//	  Intent i = getIntent();
+	    else{
+		 
 	        // Receiving the Data
-	        room = extras.getStringArray("rooms");
-	        String curRoom = extras.getString("currentRoom");
-	        
-		room[0]="Kitchen";
-		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, curRoom, null, null));
+	//      room = extras.getStringArray("rooms");
+	//      curRoom = extras.getString("currentRoom");
+	    	
+			
+		}
+	    
 		
-		//MainApplication.database.rooms.
+	    CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, curRoom, null, null));
+
 	//	MainApplication.database.rooms.
 	//room = response value
 	//TODO
@@ -52,6 +62,8 @@ public class RoomControl  extends Activity {
 			 
             @Override
             public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+            	
+            	if(selector){
                 Toast.makeText(getBaseContext(), "You selected : " + room[itemPosition]  , Toast.LENGTH_SHORT).show();
      Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
                 
@@ -62,18 +74,18 @@ public class RoomControl  extends Activity {
                
  
                 // Intent starten und zur zweiten Activity wechseln
-                startActivity(nextScreen);
+                startActivity(nextScreen);}
+            	selector=true;
                 return true;
             }
         };
  
 		actionBar.setListNavigationCallbacks(adapter, navigationListener);
-	
+
+
 
 		}
 	
-
-		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -85,10 +97,12 @@ public class RoomControl  extends Activity {
 		switch (item.getItemId()) {
 		case R.id.menu_settings:
 			startActivity(new Intent(this, SettingsActivity.class));
+			
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
 
 }
