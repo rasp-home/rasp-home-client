@@ -44,10 +44,34 @@ public class MainActivity extends Activity {
 		
  
 		actionBar.setListNavigationCallbacks(adapter, navigationListener);
-	
+		
+		searchPosition();
 
 		}
 	
+	
+		public void searchPosition(){
+		
+			String residence = MainApplication.pos.lastLocation;
+			
+			 Intent nextS = new Intent(getApplicationContext(), RoomControl.class);
+	            
+	          //Intent mit den Daten füllen
+	   
+	nextS.putExtra("currentRoom", residence);
+
+	            // Intent starten und zur zweiten Activity wechseln
+	            startActivity(nextS);    			
+			
+		};
+	
+	@Override
+		protected void onResume() {
+			// TODO Auto-generated method stub
+			super.onResume();
+			searchPosition();
+		}
+
 	ActionBar.OnNavigationListener navigationListener = new OnNavigationListener() {
 		 
         @Override
