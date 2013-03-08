@@ -30,8 +30,10 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		room[0]="Kitchen";
-	//	CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
-		
+		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
+		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
+		return;
+		}
 		//MainApplication.database.rooms.
 	//	MainApplication.database.rooms.
 	//room = response value

@@ -13,7 +13,11 @@ import android.os.Bundle;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class RoomControl  extends Activity {
@@ -31,10 +35,10 @@ public class RoomControl  extends Activity {
 			
 	Bundle extras = getIntent().getExtras();
 	    if (extras == null) {
-	    	   Toast.makeText(getBaseContext(), "An error occured, please wait while you are located  ", Toast.LENGTH_SHORT).show();
-	    	   //TODO
+	    	   Toast.makeText(getBaseContext(), "An error occurred, please wait while you are located  ", Toast.LENGTH_SHORT).show();
+	    	   
 	    	   //Locate user
-	    	  curRoom ="Located_room";
+	    	  curRoom = MainApplication.pos.lastLocation;;
 	      return;
 	    }
 	    else{
@@ -47,12 +51,8 @@ public class RoomControl  extends Activity {
 		}
 	    
 		
-	    CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, curRoom, null, null));
+	   
 
-	//	MainApplication.database.rooms.
-	//room = response value
-	//TODO
-		//Create Linear layout with nodes and button OR value depending on nodetype
 		
 		ActionBar actionBar = getActionBar();
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -64,27 +64,54 @@ public class RoomControl  extends Activity {
             public boolean onNavigationItemSelected(int itemPosition, long itemId) {
             	
             	if(selector){
-                Toast.makeText(getBaseContext(), "You selected : " + room[itemPosition]  , Toast.LENGTH_SHORT).show();
-     Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
+            		Toast.makeText(getBaseContext(), "You selected : " + room[itemPosition]  , Toast.LENGTH_SHORT).show();
+            		Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
                 
-                //Intent mit den Daten füllen
-                nextScreen.putExtra("Rooms", room);
-                nextScreen.putExtra("currentRoom", room[itemPosition]);
+            		//Intent mit den Daten füllen
+            		nextScreen.putExtra("Rooms", room);
+            		nextScreen.putExtra("currentRoom", room[itemPosition]);
  
                
  
-                // Intent starten und zur zweiten Activity wechseln
-                startActivity(nextScreen);}
+            		// Intent starten und zur zweiten Activity wechseln
+            		startActivity(nextScreen);
+                }
             	selector=true;
-                return true;
+            return true;
             }
         };
  
 		actionBar.setListNavigationCallbacks(adapter, navigationListener);
 
-
+		//TODO
+		//Create Linear layout with nodes and button OR value depending on nodetype
+		layouting();
 
 		}
+	private void layouting(){
+		
+		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, curRoom, null, null));
+		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
+		return;
+		}
+		
+		String nodesinroom=response.value;
+		TableLayout tl = (TableLayout) findViewById(R.id.LinearLayout1);
+		for(int i=0; i<nodesinroom.length();i++){
+			TableRow tr1 = new TableRow(this);
+			tr1.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
+			TextView name = new TextView(this);
+			name.setText(""+ nodesinroom.charAt(i));
+			tr1.addView(name);
+			tl.addView(tr1, new TableLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
+			
+			
+		}
+		//tl.addView... uU erst hier um alte rows nicht zu überschreiben
+	}
+	
+	
+	
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
