@@ -22,21 +22,29 @@ public class MainActivity extends Activity {
 	
 	boolean selector = false;
 	String[] room = new String[1];
-
+	
 	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		//TODO Set localisation Observer
 		
 		room[0]="Kitchen";
+		try{
 		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
+		
 		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
 		return;
 		}
+		}
+		catch(Exception e){
+			Toast.makeText(getBaseContext(), "Sorry, no connectivity"  , Toast.LENGTH_SHORT).show(); 
+		}
+		
 		//MainApplication.database.rooms.
 	//	MainApplication.database.rooms.
-	//room = response value
+	//room = response.value
 		
 		
 		ActionBar actionBar = getActionBar();
@@ -60,7 +68,7 @@ public class MainActivity extends Activity {
 	            
 	          //Intent mit den Daten füllen
 	   
-	nextS.putExtra("currentRoom", residence);
+//	nextS.putExtra("currentRoom", residence);
 
 	            // Intent starten und zur zweiten Activity wechseln
 	            startActivity(nextS);    			
@@ -87,14 +95,16 @@ public class MainActivity extends Activity {
           //Intent mit den Daten füllen
     /*     nextScreen.putExtra("Rooms", room);
          nextScreen.putExtra("currentRoom", room[itemPosition]);*/
-nextScreen.putExtra("currentRoom", "test");
+//nextScreen.putExtra("currentRoom", "test");
 
             // Intent starten und zur zweiten Activity wechseln
-            startActivity(nextScreen);}
+            startActivity(nextScreen);
+            return true;
+            }
         	selector=true;
      
             
-            return true;
+            return false;
         }
     };
 		

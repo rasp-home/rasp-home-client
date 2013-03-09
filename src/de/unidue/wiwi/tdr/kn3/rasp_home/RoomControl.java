@@ -5,6 +5,7 @@ package de.unidue.wiwi.tdr.kn3.rasp_home;
 
 import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Method;
 import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Type;
+import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Value_Type;
 import android.app.ActionBar;
 import android.app.ActionBar.OnNavigationListener;
 import android.app.Activity;
@@ -15,10 +16,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 public class RoomControl  extends Activity {
 
@@ -102,7 +105,35 @@ public class RoomControl  extends Activity {
 			tr1.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
 			TextView name = new TextView(this);
 			name.setText(""+ nodesinroom.charAt(i));
-			tr1.addView(name);
+			if(nodesinroom.charAt(i)=='b'){
+			ToggleButton button =new ToggleButton(this);
+			if(nodesinroom.charAt(i+2)=='1')			button.setChecked(true);
+			
+			button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			        if (isChecked) {
+			        	CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node,"nodename" , curRoom, "on",Value_Type.text_plain ));
+			    		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
+			    		return;
+			    		}
+			        } else {
+			        	CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node,"nodename" , curRoom, "off",Value_Type.text_plain ));
+			    		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); return;}
+			        }
+			    }
+			});
+			tr1.addView(name,0);
+			tr1.addView(button,1);
+			}
+			else{
+				TextView value = new TextView(this);
+				value.setText(""+ nodesinroom.charAt(i));
+				tr1.addView(name,0);
+				tr1.addView(value,1);
+				
+			}
+			
+			
 			tl.addView(tr1, new TableLayout.LayoutParams(LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT));
 			
 			
@@ -138,5 +169,6 @@ public class RoomControl  extends Activity {
 		MainActivity.searchPosition();
 	}*/
 
-
+	 
+    
 }
