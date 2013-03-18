@@ -47,8 +47,8 @@ public class RoomControl  extends Activity {
 	    else{
 		 
 	        // Receiving the Data
-	//      room = extras.getStringArray("rooms");
-	//      curRoom = extras.getString("currentRoom");
+	      room = extras.getStringArray("rooms");
+	      curRoom = extras.getString("currentRoom");
 	    	
 			
 		}
@@ -58,6 +58,7 @@ public class RoomControl  extends Activity {
 
 		
 		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_spinner_dropdown_item, room);
@@ -71,7 +72,7 @@ public class RoomControl  extends Activity {
             		Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
                 
             		//Intent mit den Daten füllen
-            		nextScreen.putExtra("Rooms", room);
+            		nextScreen.putExtra("rooms", room);
             		nextScreen.putExtra("currentRoom", room[itemPosition]);
  
                
@@ -93,7 +94,7 @@ public class RoomControl  extends Activity {
 		}
 	private void layouting(){
 		
-		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, curRoom, null, null));
+		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, "room", curRoom, null));
 		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
 		return;
 		}

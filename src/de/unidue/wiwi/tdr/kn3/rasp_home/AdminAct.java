@@ -28,7 +28,7 @@ CommunicationClass.ResponseMessage response2 = MainApplication.com.client.SendRe
 		return;
 		}
 		
-		String [] roomArray = new String[response2.value.length()];
+		final String [] roomArray = new String[response2.value.length()];
 		
 		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Node, null, null, null, null));
 		

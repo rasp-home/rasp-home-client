@@ -171,8 +171,14 @@ public class CommunicationClass extends Thread {
 				uri += "user";
 				break;
 			}
-			uri += message.name != null ? "/" + message.name : null;
-			uri += message.name != null ? "/" + message.attrib : null;
+			uri += message.name != null ? "/" + message.name : "";
+			if (message.attrib != null) {
+				if (message.name != null) {
+					uri += "/" + message.attrib;
+				} else {
+					uri += "?" + message.attrib + "=" + message.value;
+				}
+			}
 			switch (message.method) {
 			case GET:
 				request = new HttpGet(uri);
@@ -197,13 +203,15 @@ public class CommunicationClass extends Thread {
 				request = new HttpDelete(uri);
 				break;
 			}
-			switch (message.value_type) {
-			case text_plain:
-				request.addHeader("Content-Type", "text/plain");
-				break;
-			case text_xml:
-				request.addHeader("Content-Type", "text/xml");
-				break;
+			if (message.value_type != null) {
+				switch (message.value_type) {
+				case text_plain:
+					request.addHeader("Content-Type", "text/plain");
+					break;
+				case text_xml:
+					request.addHeader("Content-Type", "text/xml");
+					break;
+				}
 			}
 			UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user_pass);
 			request.addHeader(BasicScheme.authenticate(creds, "UTF-8", false));

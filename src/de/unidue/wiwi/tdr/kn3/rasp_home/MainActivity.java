@@ -21,7 +21,7 @@ public class MainActivity extends Activity {
 
 	
 	boolean selector = false;
-	String[] room = new String[1];
+	String[] room = new String[2];
 	
 	 
 	@Override
@@ -29,8 +29,9 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		//TODO Set localisation Observer
-		
+
 		room[0]="Kitchen";
+		room[1]="Livingroom";
 		try{
 		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
 		
@@ -48,6 +49,7 @@ public class MainActivity extends Activity {
 		
 		
 		ActionBar actionBar = getActionBar();
+		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(), android.R.layout.simple_spinner_dropdown_item, room);
@@ -55,7 +57,7 @@ public class MainActivity extends Activity {
  
 		actionBar.setListNavigationCallbacks(adapter, navigationListener);
 		
-		searchPosition();
+		//searchPosition();
 
 		}
 	
@@ -79,7 +81,7 @@ public class MainActivity extends Activity {
 		protected void onResume() {
 			// TODO Auto-generated method stub
 			super.onResume();
-			searchPosition();
+			//searchPosition();
 		}
 
 	ActionBar.OnNavigationListener navigationListener = new OnNavigationListener() {
@@ -93,8 +95,8 @@ public class MainActivity extends Activity {
             Intent nextScreen = new Intent(getApplicationContext(), RoomControl.class);
             
           //Intent mit den Daten füllen
-    /*     nextScreen.putExtra("Rooms", room);
-         nextScreen.putExtra("currentRoom", room[itemPosition]);*/
+         nextScreen.putExtra("rooms", room);
+         nextScreen.putExtra("currentRoom", room[itemPosition]);
 //nextScreen.putExtra("currentRoom", "test");
 
             // Intent starten und zur zweiten Activity wechseln
