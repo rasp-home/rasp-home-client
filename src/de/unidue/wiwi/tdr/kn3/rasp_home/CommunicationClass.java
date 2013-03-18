@@ -93,7 +93,7 @@ public class CommunicationClass extends Thread {
 		public enum Type {
 			Backend, Monitor, Node, Room, User
 		}
-		
+
 		public enum Value_Type {
 			text_plain, text_xml
 		}
@@ -117,7 +117,7 @@ public class CommunicationClass extends Thread {
 		public enum Value_Type {
 			text_plain, text_xml
 		}
-		
+
 		public ResponseMessage(int status, String reason, String value, Value_Type value_type) {
 			this.status = status;
 			this.reason = reason;
@@ -256,13 +256,11 @@ public class CommunicationClass extends Thread {
 		public Server(Context context) {
 			this.context = context;
 			observer = new Observable<RequestMessage>();
-			service = new HttpService(new BasicHttpProcessor(), new DefaultConnectionReuseStrategy(),
-					new DefaultHttpResponseFactory());
+			service = new HttpService(new BasicHttpProcessor(), new DefaultConnectionReuseStrategy(), new DefaultHttpResponseFactory());
 			registry = new HttpRequestHandlerRegistry();
 			registry.register("/node/*", new HttpRequestHandler() {
 				@Override
-				public void handle(HttpRequest request, HttpResponse response, HttpContext context)
-						throws HttpException, IOException {
+				public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
 					if (AuthorizeUser(request, response)) {
 						String[] requestArray = request.getRequestLine().getUri().split("/");
 						RequestMessage.Method method = null;
@@ -288,15 +286,13 @@ public class CommunicationClass extends Thread {
 						} else if (((HttpEntityEnclosingRequest) request).getEntity().getContentType().getValue().equals("text/xml")) {
 							value_type = RequestMessage.Value_Type.text_xml;
 						}
-						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Node, name,
-								attrib, value, value_type));
+						Server.this.observer.notifyObservers(new RequestMessage(method, RequestMessage.Type.Node, name, attrib, value, value_type));
 					}
 				}
 			});
 			registry.register("/room/*", new HttpRequestHandler() {
 				@Override
-				public void handle(HttpRequest request, HttpResponse response, HttpContext context)
-						throws HttpException, IOException {
+				public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
 					if (AuthorizeUser(request, response)) {
 						String[] requestArray = request.getRequestLine().getUri().split("/");
 						RequestMessage.Method method = null;
@@ -497,12 +493,10 @@ public class CommunicationClass extends Thread {
 					socket.receive(packet);
 
 					if ((new String(packet.getData(), "UTF-8")).equals("hello backend")) {
-						observer.notifyObservers(new RequestMessage(RequestMessage.Method.ZERO,
-								RequestMessage.Type.Backend, null, null, packet.getAddress().toString() + ":"
-										+ packet.getPort(), null));
+						observer.notifyObservers(new RequestMessage(RequestMessage.Method.ZERO, RequestMessage.Type.Backend, null, null, packet.getAddress()
+								.toString() + ":" + packet.getPort(), null));
 
-						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":"
-								+ packet.getPort());
+						Log.d(MainApplication.RH_TAG, "Hello received: " + packet.getAddress().toString() + ":" + packet.getPort());
 					}
 				}
 			} catch (Exception e) {

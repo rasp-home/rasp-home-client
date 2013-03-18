@@ -29,6 +29,7 @@ public class CommunicationService extends IntentService implements Observer<Comm
 	protected void onHandleIntent(Intent intent) {
 		synchronized (this) {
 			try {
+				//TODO Testmessage
 				CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
 				wait();
 			} catch (InterruptedException e) {
