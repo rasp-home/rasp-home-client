@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
 		room[0]="Kitchen";
 		room[1]="Livingroom";
 		try{
-		CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
+		CommunicationClass.ResponseMessage response = null;//MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
 		
 		if(response.status!=202){ Toast.makeText(getBaseContext(), "Sorry, an error occurred"  , Toast.LENGTH_SHORT).show(); 
 		return;

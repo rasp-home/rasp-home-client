@@ -26,6 +26,9 @@ public class MainApplication extends Application {
 		pref = PreferenceManager.getDefaultSharedPreferences(this);
 		database = new DatabaseClass();
 		com = new CommunicationClass(this);
+		//TODO Static IP
+		com.client.SetServerIpPort("132.252.250.102:8091");
+		com.client.SetUserPass("admin:admin");
 		pos = PositioningClass.loadPositions(this, "pref_positioning_calibrate");
 		if (pref.getBoolean("pref_positioning_tracking", false)) {
 			startService(positioningService);

@@ -1,5 +1,7 @@
 package de.unidue.wiwi.tdr.kn3.rasp_home;
 
+import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Method;
+import de.unidue.wiwi.tdr.kn3.rasp_home.CommunicationClass.RequestMessage.Type;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
@@ -27,6 +29,7 @@ public class CommunicationService extends IntentService implements Observer<Comm
 	protected void onHandleIntent(Intent intent) {
 		synchronized (this) {
 			try {
+				CommunicationClass.ResponseMessage response = MainApplication.com.client.SendRequest(new CommunicationClass.RequestMessage(Method.GET, Type.Room, null, null, null, null));
 				wait();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
