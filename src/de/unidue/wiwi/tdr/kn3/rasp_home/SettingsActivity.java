@@ -41,7 +41,7 @@ public class SettingsActivity extends Activity {
 			if (pref != null)
 				pref.setSummary(String.format(getString(R.string.pref_communication_serverport_summary), pref
 						.getSharedPreferences().getInt(pref.getKey(), 0)));
-			pref = findPreference("pref_communication_zeroconfigport");
+			pref = findPreference("pref_communication_zeroconfport");
 			if (pref != null)
 				pref.setSummary(String.format(getString(R.string.pref_communication_zeroconfport_summary), pref
 						.getSharedPreferences().getInt(pref.getKey(), 0)));
@@ -90,7 +90,7 @@ public class SettingsActivity extends Activity {
 						arg0.getInt(arg1, 0)));
 				MainApplication.com.server.Stop();
 				MainApplication.com.server.Start(MainApplication.pref.getInt("pref_communication_serverport", 8888));
-			} else if (arg1.equals("pref_communication_zeroconfigport")) {
+			} else if (arg1.equals("pref_communication_zeroconfport")) {
 				pref.setSummary(String.format(getString(R.string.pref_communication_zeroconfport_summary),
 						arg0.getInt(arg1, 0)));
 				MainApplication.com.zeroconf.Stop();

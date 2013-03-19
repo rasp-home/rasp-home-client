@@ -16,6 +16,7 @@ import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -221,9 +222,9 @@ public class CommunicationClass extends Thread {
 				String reason = response.getStatusLine().getReasonPhrase();
 				String value = GetStringOfInputStream(response.getEntity().getContent());
 				ResponseMessage.Value_Type value_type = null;
-				if (response.getEntity().getContentType().getValue().equals("text/plain")) {
+				if (response.getEntity().getContentType().getElements()[0].getName().equals("text/plain")) {
 					value_type = ResponseMessage.Value_Type.text_plain;
-				} else if (response.getEntity().getContentType().getValue().equals("text/xml")) {
+				} else if (response.getEntity().getContentType().getElements()[0].getName().equals("text/xml")) {
 					value_type = ResponseMessage.Value_Type.text_xml;
 				}
 				return new ResponseMessage(status, reason, value, value_type);
